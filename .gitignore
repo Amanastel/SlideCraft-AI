@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+venv/
+.env
+
+# BAML & config
+*.log
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+
+# GitHub Actions/workflows
+.github/workflows/
+
+# OS files
+.DS_Store
+Thumbs.db
+.env
+venv/
