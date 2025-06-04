@@ -463,11 +463,10 @@ Use the provided test files to validate presentation quality:
 **For API questions**: Refer to the comprehensive API_REFERENCE.md documentation
 **For deployment help**: Follow the step-by-step DEPLOYMENT.md guide
 
-## 📄 License
 
-[Specify your license here]
+## License
 
----
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 **SlideCraft AI - PowerPoint Generation Platform** 
 
