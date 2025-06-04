@@ -22,60 +22,60 @@ from .globals import DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIM
 class TypeBuilder(_TypeBuilder):
     def __init__(self):
         super().__init__(classes=set(
-          ["ExtractedInfo","Parameter","Plan","Resume","Tool","ToolCall","Tools",]
+          ["ImageElement","ImageStyle","OutlinePoint","OutlineSection","PresentationInput","SlideContent","SlideElement",]
         ), enums=set(
-          ["Urgency",]
+          []
         ), runtime=DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME)
 
 
     @property
-    def ExtractedInfo(self) -> "ExtractedInfoAst":
-        return ExtractedInfoAst(self)
+    def ImageElement(self) -> "ImageElementAst":
+        return ImageElementAst(self)
 
     @property
-    def Parameter(self) -> "ParameterAst":
-        return ParameterAst(self)
+    def ImageStyle(self) -> "ImageStyleAst":
+        return ImageStyleAst(self)
 
     @property
-    def Plan(self) -> "PlanAst":
-        return PlanAst(self)
+    def OutlinePoint(self) -> "OutlinePointAst":
+        return OutlinePointAst(self)
 
     @property
-    def Resume(self) -> "ResumeAst":
-        return ResumeAst(self)
+    def OutlineSection(self) -> "OutlineSectionAst":
+        return OutlineSectionAst(self)
 
     @property
-    def Tool(self) -> "ToolAst":
-        return ToolAst(self)
+    def PresentationInput(self) -> "PresentationInputAst":
+        return PresentationInputAst(self)
 
     @property
-    def ToolCall(self) -> "ToolCallAst":
-        return ToolCallAst(self)
+    def SlideContent(self) -> "SlideContentAst":
+        return SlideContentAst(self)
 
     @property
-    def Tools(self) -> "ToolsAst":
-        return ToolsAst(self)
+    def SlideElement(self) -> "SlideElementAst":
+        return SlideElementAst(self)
 
 
 
 
 
-class ExtractedInfoAst:
+class ImageElementAst:
     def __init__(self, tb: _TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
-        self._bldr = _tb.class_("ExtractedInfo")
-        self._properties: typing.Set[str] = set([ "fullName",  "emailAddress",  "requestDetails",  "urgencyLevel", ])
-        self._props = ExtractedInfoProperties(self._bldr, self._properties)
+        self._bldr = _tb.class_("ImageElement")
+        self._properties: typing.Set[str] = set([ "id",  "type",  "x",  "y",  "width",  "height",  "src",  "alt",  "caption",  "prompt",  "style", ])
+        self._props = ImageElementProperties(self._bldr, self._properties)
 
     def type(self) -> FieldType:
         return self._bldr.field()
 
     @property
-    def props(self) -> "ExtractedInfoProperties":
+    def props(self) -> "ImageElementProperties":
         return self._props
 
 
-class ExtractedInfoViewer(ExtractedInfoAst):
+class ImageElementViewer(ImageElementAst):
     def __init__(self, tb: _TypeBuilder):
         super().__init__(tb)
 
@@ -85,7 +85,7 @@ class ExtractedInfoViewer(ExtractedInfoAst):
 
 
 
-class ExtractedInfoProperties:
+class ImageElementProperties:
     def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
         self.__bldr = bldr
         self.__properties = properties
@@ -93,89 +93,67 @@ class ExtractedInfoProperties:
     
 
     @property
-    def fullName(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("fullName"))
-
-    @property
-    def emailAddress(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("emailAddress"))
-
-    @property
-    def requestDetails(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("requestDetails"))
-
-    @property
-    def urgencyLevel(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("urgencyLevel"))
-
-    
-
-class ParameterAst:
-    def __init__(self, tb: _TypeBuilder):
-        _tb = tb._tb # type: ignore (we know how to use this private attribute)
-        self._bldr = _tb.class_("Parameter")
-        self._properties: typing.Set[str] = set([ "name",  "type",  "description",  "required", ])
-        self._props = ParameterProperties(self._bldr, self._properties)
-
-    def type(self) -> FieldType:
-        return self._bldr.field()
-
-    @property
-    def props(self) -> "ParameterProperties":
-        return self._props
-
-
-class ParameterViewer(ParameterAst):
-    def __init__(self, tb: _TypeBuilder):
-        super().__init__(tb)
-
-    
-    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
-        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
-
-
-
-class ParameterProperties:
-    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
-        self.__bldr = bldr
-        self.__properties = properties
-
-    
-
-    @property
-    def name(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("name"))
+    def id(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("id"))
 
     @property
     def type(self) -> ClassPropertyViewer:
         return ClassPropertyViewer(self.__bldr.property("type"))
 
     @property
-    def description(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("description"))
+    def x(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("x"))
 
     @property
-    def required(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("required"))
+    def y(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("y"))
+
+    @property
+    def width(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("width"))
+
+    @property
+    def height(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("height"))
+
+    @property
+    def src(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("src"))
+
+    @property
+    def alt(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("alt"))
+
+    @property
+    def caption(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("caption"))
+
+    @property
+    def prompt(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("prompt"))
+
+    @property
+    def style(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("style"))
 
     
 
-class PlanAst:
+class ImageStyleAst:
     def __init__(self, tb: _TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
-        self._bldr = _tb.class_("Plan")
-        self._properties: typing.Set[str] = set([ "steps", ])
-        self._props = PlanProperties(self._bldr, self._properties)
+        self._bldr = _tb.class_("ImageStyle")
+        self._properties: typing.Set[str] = set([ "borderRadius",  "objectFit",  "marginBottom", ])
+        self._props = ImageStyleProperties(self._bldr, self._properties)
 
     def type(self) -> FieldType:
         return self._bldr.field()
 
     @property
-    def props(self) -> "PlanProperties":
+    def props(self) -> "ImageStyleProperties":
         return self._props
 
 
-class PlanViewer(PlanAst):
+class ImageStyleViewer(ImageStyleAst):
     def __init__(self, tb: _TypeBuilder):
         super().__init__(tb)
 
@@ -185,7 +163,7 @@ class PlanViewer(PlanAst):
 
 
 
-class PlanProperties:
+class ImageStyleProperties:
     def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
         self.__bldr = bldr
         self.__properties = properties
@@ -193,27 +171,35 @@ class PlanProperties:
     
 
     @property
-    def steps(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("steps"))
+    def borderRadius(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("borderRadius"))
+
+    @property
+    def objectFit(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("objectFit"))
+
+    @property
+    def marginBottom(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("marginBottom"))
 
     
 
-class ResumeAst:
+class OutlinePointAst:
     def __init__(self, tb: _TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
-        self._bldr = _tb.class_("Resume")
-        self._properties: typing.Set[str] = set([ "name",  "email",  "experience",  "skills", ])
-        self._props = ResumeProperties(self._bldr, self._properties)
+        self._bldr = _tb.class_("OutlinePoint")
+        self._properties: typing.Set[str] = set([ "text", ])
+        self._props = OutlinePointProperties(self._bldr, self._properties)
 
     def type(self) -> FieldType:
         return self._bldr.field()
 
     @property
-    def props(self) -> "ResumeProperties":
+    def props(self) -> "OutlinePointProperties":
         return self._props
 
 
-class ResumeViewer(ResumeAst):
+class OutlinePointViewer(OutlinePointAst):
     def __init__(self, tb: _TypeBuilder):
         super().__init__(tb)
 
@@ -223,7 +209,7 @@ class ResumeViewer(ResumeAst):
 
 
 
-class ResumeProperties:
+class OutlinePointProperties:
     def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
         self.__bldr = bldr
         self.__properties = properties
@@ -231,39 +217,27 @@ class ResumeProperties:
     
 
     @property
-    def name(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("name"))
-
-    @property
-    def email(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("email"))
-
-    @property
-    def experience(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("experience"))
-
-    @property
-    def skills(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("skills"))
+    def text(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("text"))
 
     
 
-class ToolAst:
+class OutlineSectionAst:
     def __init__(self, tb: _TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
-        self._bldr = _tb.class_("Tool")
-        self._properties: typing.Set[str] = set([ "name",  "description",  "parameters",  "returnType", ])
-        self._props = ToolProperties(self._bldr, self._properties)
+        self._bldr = _tb.class_("OutlineSection")
+        self._properties: typing.Set[str] = set([ "id",  "title",  "points", ])
+        self._props = OutlineSectionProperties(self._bldr, self._properties)
 
     def type(self) -> FieldType:
         return self._bldr.field()
 
     @property
-    def props(self) -> "ToolProperties":
+    def props(self) -> "OutlineSectionProperties":
         return self._props
 
 
-class ToolViewer(ToolAst):
+class OutlineSectionViewer(OutlineSectionAst):
     def __init__(self, tb: _TypeBuilder):
         super().__init__(tb)
 
@@ -273,7 +247,7 @@ class ToolViewer(ToolAst):
 
 
 
-class ToolProperties:
+class OutlineSectionProperties:
     def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
         self.__bldr = bldr
         self.__properties = properties
@@ -281,39 +255,35 @@ class ToolProperties:
     
 
     @property
-    def name(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("name"))
+    def id(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("id"))
 
     @property
-    def description(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("description"))
+    def title(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("title"))
 
     @property
-    def parameters(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("parameters"))
-
-    @property
-    def returnType(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("returnType"))
+    def points(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("points"))
 
     
 
-class ToolCallAst:
+class PresentationInputAst:
     def __init__(self, tb: _TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
-        self._bldr = _tb.class_("ToolCall")
-        self._properties: typing.Set[str] = set([ "toolName",  "arguments",  "resultName",  "description",  "dependsOn", ])
-        self._props = ToolCallProperties(self._bldr, self._properties)
+        self._bldr = _tb.class_("PresentationInput")
+        self._properties: typing.Set[str] = set([ "id",  "title",  "outline", ])
+        self._props = PresentationInputProperties(self._bldr, self._properties)
 
     def type(self) -> FieldType:
         return self._bldr.field()
 
     @property
-    def props(self) -> "ToolCallProperties":
+    def props(self) -> "PresentationInputProperties":
         return self._props
 
 
-class ToolCallViewer(ToolCallAst):
+class PresentationInputViewer(PresentationInputAst):
     def __init__(self, tb: _TypeBuilder):
         super().__init__(tb)
 
@@ -323,7 +293,7 @@ class ToolCallViewer(ToolCallAst):
 
 
 
-class ToolCallProperties:
+class PresentationInputProperties:
     def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
         self.__bldr = bldr
         self.__properties = properties
@@ -331,43 +301,35 @@ class ToolCallProperties:
     
 
     @property
-    def toolName(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("toolName"))
+    def id(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("id"))
 
     @property
-    def arguments(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("arguments"))
+    def title(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("title"))
 
     @property
-    def resultName(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("resultName"))
-
-    @property
-    def description(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("description"))
-
-    @property
-    def dependsOn(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("dependsOn"))
+    def outline(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("outline"))
 
     
 
-class ToolsAst:
+class SlideContentAst:
     def __init__(self, tb: _TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
-        self._bldr = _tb.class_("Tools")
-        self._properties: typing.Set[str] = set([ "name",  "args", ])
-        self._props = ToolsProperties(self._bldr, self._properties)
+        self._bldr = _tb.class_("SlideContent")
+        self._properties: typing.Set[str] = set([ "slide_id",  "background",  "content", ])
+        self._props = SlideContentProperties(self._bldr, self._properties)
 
     def type(self) -> FieldType:
         return self._bldr.field()
 
     @property
-    def props(self) -> "ToolsProperties":
+    def props(self) -> "SlideContentProperties":
         return self._props
 
 
-class ToolsViewer(ToolsAst):
+class SlideContentViewer(SlideContentAst):
     def __init__(self, tb: _TypeBuilder):
         super().__init__(tb)
 
@@ -377,7 +339,7 @@ class ToolsViewer(ToolsAst):
 
 
 
-class ToolsProperties:
+class SlideContentProperties:
     def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
         self.__bldr = bldr
         self.__properties = properties
@@ -385,68 +347,78 @@ class ToolsProperties:
     
 
     @property
-    def name(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("name"))
+    def slide_id(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("slide_id"))
 
     @property
-    def args(self) -> ClassPropertyViewer:
-        return ClassPropertyViewer(self.__bldr.property("args"))
+    def background(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("background"))
+
+    @property
+    def content(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("content"))
 
     
 
-
-
-class UrgencyAst:
+class SlideElementAst:
     def __init__(self, tb: _TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
-        self._bldr = _tb.enum("Urgency")
-        self._values: typing.Set[str] = set([ "LOW",  "NORMAL",  "HIGH",  "CRITICAL", ])
-        self._vals = UrgencyValues(self._bldr, self._values)
+        self._bldr = _tb.class_("SlideElement")
+        self._properties: typing.Set[str] = set([ "id",  "x",  "y",  "width",  "height",  "html", ])
+        self._props = SlideElementProperties(self._bldr, self._properties)
 
     def type(self) -> FieldType:
         return self._bldr.field()
 
     @property
-    def values(self) -> "UrgencyValues":
-        return self._vals
+    def props(self) -> "SlideElementProperties":
+        return self._props
 
 
-class UrgencyViewer(UrgencyAst):
+class SlideElementViewer(SlideElementAst):
     def __init__(self, tb: _TypeBuilder):
         super().__init__(tb)
 
-    def list_values(self) -> typing.List[typing.Tuple[str, EnumValueViewer]]:
-        return [(name, EnumValueViewer(self._bldr.value(name))) for name in self._values]
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
 
 
-class UrgencyValues:
-    def __init__(self, enum_bldr: EnumBuilder, values: typing.Set[str]):
-        self.__bldr = enum_bldr
-        self.__values = values
+
+class SlideElementProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
 
     
 
     @property
-    def LOW(self) -> EnumValueViewer:
-        return EnumValueViewer(self.__bldr.value("LOW"))
-    
+    def id(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("id"))
 
     @property
-    def NORMAL(self) -> EnumValueViewer:
-        return EnumValueViewer(self.__bldr.value("NORMAL"))
-    
+    def x(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("x"))
 
     @property
-    def HIGH(self) -> EnumValueViewer:
-        return EnumValueViewer(self.__bldr.value("HIGH"))
-    
+    def y(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("y"))
 
     @property
-    def CRITICAL(self) -> EnumValueViewer:
-        return EnumValueViewer(self.__bldr.value("CRITICAL"))
-    
+    def width(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("width"))
+
+    @property
+    def height(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("height"))
+
+    @property
+    def html(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("html"))
 
     
+
+
 
 
 __all__ = ["TypeBuilder"]

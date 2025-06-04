@@ -37,40 +37,46 @@ class StreamState(BaseModel, Generic[T]):
     state: Literal["Pending", "Incomplete", "Complete"]
 
 
-class ExtractedInfo(BaseModel):
-    fullName: Optional[str] = None
-    emailAddress: Optional[str] = None
-    requestDetails: Optional[str] = None
-    urgencyLevel: Optional[types.Urgency] = None
-
-class Parameter(BaseModel):
-    name: Optional[str] = None
+class ImageElement(BaseModel):
+    id: Optional[str] = None
     type: Optional[str] = None
-    description: Optional[str] = None
-    required: Optional[bool] = None
+    x: Optional[int] = None
+    y: Optional[int] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
+    src: Optional[str] = None
+    alt: Optional[str] = None
+    caption: Optional[str] = None
+    prompt: Optional[str] = None
+    style: Optional["ImageStyle"] = None
 
-class Plan(BaseModel):
-    steps: List["ToolCall"]
+class ImageStyle(BaseModel):
+    borderRadius: Optional[str] = None
+    objectFit: Optional[str] = None
+    marginBottom: Optional[str] = None
 
-class Resume(BaseModel):
-    name: Optional[str] = None
-    email: Optional[str] = None
-    experience: List[str]
-    skills: List[str]
+class OutlinePoint(BaseModel):
+    text: Optional[str] = None
 
-class Tool(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    parameters: List["Parameter"]
-    returnType: Optional[str] = None
+class OutlineSection(BaseModel):
+    id: Optional[int] = None
+    title: Optional[str] = None
+    points: List[str]
 
-class ToolCall(BaseModel):
-    toolName: Optional[str] = None
-    arguments: Dict[str, Optional[str]]
-    resultName: Optional[str] = None
-    description: Optional[str] = None
-    dependsOn: List[str]
+class PresentationInput(BaseModel):
+    id: Optional[int] = None
+    title: Optional[str] = None
+    outline: List["OutlineSection"]
 
-class Tools(BaseModel):
-    name: Optional[str] = None
-    args: Dict[str, Optional[str]]
+class SlideContent(BaseModel):
+    slide_id: Optional[str] = None
+    background: Optional[str] = None
+    content: List[Union["SlideElement", "ImageElement"]]
+
+class SlideElement(BaseModel):
+    id: Optional[str] = None
+    x: Optional[int] = None
+    y: Optional[int] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
+    html: Optional[str] = None

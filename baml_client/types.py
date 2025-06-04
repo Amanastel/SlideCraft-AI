@@ -41,47 +41,46 @@ def all_succeeded(checks: Dict[CheckName, Check]) -> bool:
 
 
 
-class Urgency(str, Enum):
-    
-    LOW = "LOW"
-    NORMAL = "NORMAL"
-    HIGH = "HIGH"
-    CRITICAL = "CRITICAL"
-
-class ExtractedInfo(BaseModel):
-    fullName: str
-    emailAddress: str
-    requestDetails: str
-    urgencyLevel: "Urgency"
-
-class Parameter(BaseModel):
-    name: str
+class ImageElement(BaseModel):
+    id: str
     type: str
-    description: str
-    required: bool
+    x: int
+    y: int
+    width: int
+    height: int
+    src: str
+    alt: str
+    caption: str
+    prompt: str
+    style: "ImageStyle"
 
-class Plan(BaseModel):
-    steps: List["ToolCall"]
+class ImageStyle(BaseModel):
+    borderRadius: str
+    objectFit: str
+    marginBottom: str
 
-class Resume(BaseModel):
-    name: str
-    email: str
-    experience: List[str]
-    skills: List[str]
+class OutlinePoint(BaseModel):
+    text: str
 
-class Tool(BaseModel):
-    name: str
-    description: str
-    parameters: List["Parameter"]
-    returnType: str
+class OutlineSection(BaseModel):
+    id: int
+    title: str
+    points: List[str]
 
-class ToolCall(BaseModel):
-    toolName: str
-    arguments: Dict[str, str]
-    resultName: str
-    description: str
-    dependsOn: List[str]
+class PresentationInput(BaseModel):
+    id: int
+    title: str
+    outline: List["OutlineSection"]
 
-class Tools(BaseModel):
-    name: str
-    args: Dict[str, str]
+class SlideContent(BaseModel):
+    slide_id: str
+    background: str
+    content: List[Union["SlideElement", "ImageElement"]]
+
+class SlideElement(BaseModel):
+    id: str
+    x: int
+    y: int
+    width: int
+    height: int
+    html: str

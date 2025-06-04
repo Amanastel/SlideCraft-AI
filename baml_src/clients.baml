@@ -73,3 +73,47 @@ retry_policy Exponential {
     max_delay_ms 10000
   }
 }
+
+
+client<llm> Gemini {
+  provider google-ai
+  options {
+    model "gemini-1.5-pro-001"
+    api_key env.GOOGLE_API_KEY
+  }
+}
+
+client<llm> GeminiFlash {
+  provider google-ai
+  options {
+    model "gemini-1.5-flash"
+    api_key env.GOOGLE_API_KEY
+  }
+}
+
+client<llm> GeminiFlashWithHeaders {
+  provider google-ai
+  options {
+    model "gemini-1.5-flash"
+    api_key env.GOOGLE_API_KEY
+    headers {
+      "X-My-Header" "my-value"
+    }
+    generationConfig {
+      temperature 0.5
+      maxOutputTokens 8192
+    }
+  }
+}
+
+client<llm> Gemini20Flash {
+  provider google-ai
+  options {
+    model "gemini-2.0-flash"
+    api_key env.GOOGLE_API_KEY
+    generationConfig {
+      temperature 0.7
+      maxOutputTokens 8192
+    }
+  }
+}

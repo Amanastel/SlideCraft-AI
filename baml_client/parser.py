@@ -37,11 +37,11 @@ class LlmResponseParser:
       self.__ctx_manager = ctx_manager
 
     
-    def ExtractEmailDetails(
+    def GeneratePresentation(
         self,
         llm_response: str,
         baml_options: BamlCallOptions = {},
-    ) -> types.ExtractedInfo:
+    ) -> List[types.SlideContent]:
       __tb__ = baml_options.get("tb", None)
       if __tb__ is not None:
         tb = __tb__._tb # type: ignore (we know how to use this private attribute)
@@ -50,7 +50,7 @@ class LlmResponseParser:
       __cr__ = baml_options.get("client_registry", None)
 
       parsed = self.__runtime.parse_llm_response(
-        "ExtractEmailDetails",
+        "GeneratePresentation",
         llm_response,
         types,
         types,
@@ -61,13 +61,13 @@ class LlmResponseParser:
         __cr__,
       )
 
-      return cast(types.ExtractedInfo, parsed)
+      return cast(List[types.SlideContent], parsed)
     
-    def ExtractResume(
+    def ValidatePresentation(
         self,
         llm_response: str,
         baml_options: BamlCallOptions = {},
-    ) -> types.Resume:
+    ) -> bool:
       __tb__ = baml_options.get("tb", None)
       if __tb__ is not None:
         tb = __tb__._tb # type: ignore (we know how to use this private attribute)
@@ -76,7 +76,7 @@ class LlmResponseParser:
       __cr__ = baml_options.get("client_registry", None)
 
       parsed = self.__runtime.parse_llm_response(
-        "ExtractResume",
+        "ValidatePresentation",
         llm_response,
         types,
         types,
@@ -87,59 +87,7 @@ class LlmResponseParser:
         __cr__,
       )
 
-      return cast(types.Resume, parsed)
-    
-    def GeneratePlan(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> types.Plan:
-      __tb__ = baml_options.get("tb", None)
-      if __tb__ is not None:
-        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
-      else:
-        tb = None
-      __cr__ = baml_options.get("client_registry", None)
-
-      parsed = self.__runtime.parse_llm_response(
-        "GeneratePlan",
-        llm_response,
-        types,
-        types,
-        partial_types,
-        False,
-        self.__ctx_manager.get(),
-        tb,
-        __cr__,
-      )
-
-      return cast(types.Plan, parsed)
-    
-    def Plans(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> List[types.Tool]:
-      __tb__ = baml_options.get("tb", None)
-      if __tb__ is not None:
-        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
-      else:
-        tb = None
-      __cr__ = baml_options.get("client_registry", None)
-
-      parsed = self.__runtime.parse_llm_response(
-        "Plans",
-        llm_response,
-        types,
-        types,
-        partial_types,
-        False,
-        self.__ctx_manager.get(),
-        tb,
-        __cr__,
-      )
-
-      return cast(List[types.Tool], parsed)
+      return cast(bool, parsed)
     
 
 
@@ -152,11 +100,11 @@ class LlmStreamParser:
       self.__ctx_manager = ctx_manager
 
     
-    def ExtractEmailDetails(
+    def GeneratePresentation(
         self,
         llm_response: str,
         baml_options: BamlCallOptions = {},
-    ) -> partial_types.ExtractedInfo:
+    ) -> List[partial_types.SlideContent]:
       __tb__ = baml_options.get("tb", None)
       if __tb__ is not None:
         tb = __tb__._tb # type: ignore (we know how to use this private attribute)
@@ -165,7 +113,7 @@ class LlmStreamParser:
       __cr__ = baml_options.get("client_registry", None)
 
       parsed = self.__runtime.parse_llm_response(
-        "ExtractEmailDetails",
+        "GeneratePresentation",
         llm_response,
         types,
         types,
@@ -176,13 +124,13 @@ class LlmStreamParser:
         __cr__,
       )
 
-      return cast(partial_types.ExtractedInfo, parsed)
+      return cast(List[partial_types.SlideContent], parsed)
     
-    def ExtractResume(
+    def ValidatePresentation(
         self,
         llm_response: str,
         baml_options: BamlCallOptions = {},
-    ) -> partial_types.Resume:
+    ) -> Optional[bool]:
       __tb__ = baml_options.get("tb", None)
       if __tb__ is not None:
         tb = __tb__._tb # type: ignore (we know how to use this private attribute)
@@ -191,7 +139,7 @@ class LlmStreamParser:
       __cr__ = baml_options.get("client_registry", None)
 
       parsed = self.__runtime.parse_llm_response(
-        "ExtractResume",
+        "ValidatePresentation",
         llm_response,
         types,
         types,
@@ -202,59 +150,7 @@ class LlmStreamParser:
         __cr__,
       )
 
-      return cast(partial_types.Resume, parsed)
-    
-    def GeneratePlan(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> partial_types.Plan:
-      __tb__ = baml_options.get("tb", None)
-      if __tb__ is not None:
-        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
-      else:
-        tb = None
-      __cr__ = baml_options.get("client_registry", None)
-
-      parsed = self.__runtime.parse_llm_response(
-        "GeneratePlan",
-        llm_response,
-        types,
-        types,
-        partial_types,
-        True,
-        self.__ctx_manager.get(),
-        tb,
-        __cr__,
-      )
-
-      return cast(partial_types.Plan, parsed)
-    
-    def Plans(
-        self,
-        llm_response: str,
-        baml_options: BamlCallOptions = {},
-    ) -> List[partial_types.Tool]:
-      __tb__ = baml_options.get("tb", None)
-      if __tb__ is not None:
-        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
-      else:
-        tb = None
-      __cr__ = baml_options.get("client_registry", None)
-
-      parsed = self.__runtime.parse_llm_response(
-        "Plans",
-        llm_response,
-        types,
-        types,
-        partial_types,
-        True,
-        self.__ctx_manager.get(),
-        tb,
-        __cr__,
-      )
-
-      return cast(List[partial_types.Tool], parsed)
+      return cast(Optional[bool], parsed)
     
 
 

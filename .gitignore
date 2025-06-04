@@ -23,3 +23,5 @@ venv/
 Thumbs.db
 .env
 venv/
+
+configs.ini

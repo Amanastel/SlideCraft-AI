@@ -100,11 +100,11 @@ class BamlAsyncClient:
       return self.__llm_stream_parser
 
     
-    async def ExtractEmailDetails(
+    async def GeneratePresentation(
         self,
-        email_text: str,
+        input: types.PresentationInput,
         baml_options: BamlCallOptions = {},
-    ) -> types.ExtractedInfo:
+    ) -> List[types.SlideContent]:
       options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
 
       __tb__ = options.get("tb", None)
@@ -116,22 +116,22 @@ class BamlAsyncClient:
       collector = options.get("collector", None)
       collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
       raw = await self.__runtime.call_function(
-        "ExtractEmailDetails",
+        "GeneratePresentation",
         {
-          "email_text": email_text,
+          "input": input,
         },
         self.__ctx_manager.get(),
         tb,
         __cr__,
         collectors,
       )
-      return cast(types.ExtractedInfo, raw.cast_to(types, types, partial_types, False))
+      return cast(List[types.SlideContent], raw.cast_to(types, types, partial_types, False))
     
-    async def ExtractResume(
+    async def ValidatePresentation(
         self,
-        resume: str,
+        slides: List[types.SlideContent],
         baml_options: BamlCallOptions = {},
-    ) -> types.Resume:
+    ) -> bool:
       options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
 
       __tb__ = options.get("tb", None)
@@ -143,70 +143,16 @@ class BamlAsyncClient:
       collector = options.get("collector", None)
       collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
       raw = await self.__runtime.call_function(
-        "ExtractResume",
+        "ValidatePresentation",
         {
-          "resume": resume,
+          "slides": slides,
         },
         self.__ctx_manager.get(),
         tb,
         __cr__,
         collectors,
       )
-      return cast(types.Resume, raw.cast_to(types, types, partial_types, False))
-    
-    async def GeneratePlan(
-        self,
-        instructions: str,tools: List[types.Tool],
-        baml_options: BamlCallOptions = {},
-    ) -> types.Plan:
-      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
-
-      __tb__ = options.get("tb", None)
-      if __tb__ is not None:
-        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
-      else:
-        tb = None
-      __cr__ = options.get("client_registry", None)
-      collector = options.get("collector", None)
-      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
-      raw = await self.__runtime.call_function(
-        "GeneratePlan",
-        {
-          "instructions": instructions,"tools": tools,
-        },
-        self.__ctx_manager.get(),
-        tb,
-        __cr__,
-        collectors,
-      )
-      return cast(types.Plan, raw.cast_to(types, types, partial_types, False))
-    
-    async def Plans(
-        self,
-        instructions: str,tools: str,
-        baml_options: BamlCallOptions = {},
-    ) -> List[types.Tool]:
-      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
-
-      __tb__ = options.get("tb", None)
-      if __tb__ is not None:
-        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
-      else:
-        tb = None
-      __cr__ = options.get("client_registry", None)
-      collector = options.get("collector", None)
-      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
-      raw = await self.__runtime.call_function(
-        "Plans",
-        {
-          "instructions": instructions,"tools": tools,
-        },
-        self.__ctx_manager.get(),
-        tb,
-        __cr__,
-        collectors,
-      )
-      return cast(List[types.Tool], raw.cast_to(types, types, partial_types, False))
+      return cast(bool, raw.cast_to(types, types, partial_types, False))
     
 
 
@@ -220,11 +166,11 @@ class BamlStreamClient:
       self.__baml_options = baml_options or {}
 
     
-    def ExtractEmailDetails(
+    def GeneratePresentation(
         self,
-        email_text: str,
+        input: types.PresentationInput,
         baml_options: BamlCallOptions = {},
-    ) -> baml_py.BamlStream[partial_types.ExtractedInfo, types.ExtractedInfo]:
+    ) -> baml_py.BamlStream[List[partial_types.SlideContent], List[types.SlideContent]]:
       options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
       __tb__ = options.get("tb", None)
       if __tb__ is not None:
@@ -235,9 +181,9 @@ class BamlStreamClient:
       collector = options.get("collector", None)
       collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
       raw = self.__runtime.stream_function(
-        "ExtractEmailDetails",
+        "GeneratePresentation",
         {
-          "email_text": email_text,
+          "input": input,
         },
         None,
         self.__ctx_manager.get(),
@@ -246,18 +192,18 @@ class BamlStreamClient:
         collectors,
       )
 
-      return baml_py.BamlStream[partial_types.ExtractedInfo, types.ExtractedInfo](
+      return baml_py.BamlStream[List[partial_types.SlideContent], List[types.SlideContent]](
         raw,
-        lambda x: cast(partial_types.ExtractedInfo, x.cast_to(types, types, partial_types, True)),
-        lambda x: cast(types.ExtractedInfo, x.cast_to(types, types, partial_types, False)),
+        lambda x: cast(List[partial_types.SlideContent], x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(List[types.SlideContent], x.cast_to(types, types, partial_types, False)),
         self.__ctx_manager.get(),
       )
     
-    def ExtractResume(
+    def ValidatePresentation(
         self,
-        resume: str,
+        slides: List[types.SlideContent],
         baml_options: BamlCallOptions = {},
-    ) -> baml_py.BamlStream[partial_types.Resume, types.Resume]:
+    ) -> baml_py.BamlStream[Optional[bool], bool]:
       options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
       __tb__ = options.get("tb", None)
       if __tb__ is not None:
@@ -268,9 +214,9 @@ class BamlStreamClient:
       collector = options.get("collector", None)
       collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
       raw = self.__runtime.stream_function(
-        "ExtractResume",
+        "ValidatePresentation",
         {
-          "resume": resume,
+          "slides": slides,
         },
         None,
         self.__ctx_manager.get(),
@@ -279,78 +225,10 @@ class BamlStreamClient:
         collectors,
       )
 
-      return baml_py.BamlStream[partial_types.Resume, types.Resume](
+      return baml_py.BamlStream[Optional[bool], bool](
         raw,
-        lambda x: cast(partial_types.Resume, x.cast_to(types, types, partial_types, True)),
-        lambda x: cast(types.Resume, x.cast_to(types, types, partial_types, False)),
-        self.__ctx_manager.get(),
-      )
-    
-    def GeneratePlan(
-        self,
-        instructions: str,tools: List[types.Tool],
-        baml_options: BamlCallOptions = {},
-    ) -> baml_py.BamlStream[partial_types.Plan, types.Plan]:
-      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
-      __tb__ = options.get("tb", None)
-      if __tb__ is not None:
-        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
-      else:
-        tb = None
-      __cr__ = options.get("client_registry", None)
-      collector = options.get("collector", None)
-      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
-      raw = self.__runtime.stream_function(
-        "GeneratePlan",
-        {
-          "instructions": instructions,
-          "tools": tools,
-        },
-        None,
-        self.__ctx_manager.get(),
-        tb,
-        __cr__,
-        collectors,
-      )
-
-      return baml_py.BamlStream[partial_types.Plan, types.Plan](
-        raw,
-        lambda x: cast(partial_types.Plan, x.cast_to(types, types, partial_types, True)),
-        lambda x: cast(types.Plan, x.cast_to(types, types, partial_types, False)),
-        self.__ctx_manager.get(),
-      )
-    
-    def Plans(
-        self,
-        instructions: str,tools: str,
-        baml_options: BamlCallOptions = {},
-    ) -> baml_py.BamlStream[List[partial_types.Tool], List[types.Tool]]:
-      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
-      __tb__ = options.get("tb", None)
-      if __tb__ is not None:
-        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
-      else:
-        tb = None
-      __cr__ = options.get("client_registry", None)
-      collector = options.get("collector", None)
-      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
-      raw = self.__runtime.stream_function(
-        "Plans",
-        {
-          "instructions": instructions,
-          "tools": tools,
-        },
-        None,
-        self.__ctx_manager.get(),
-        tb,
-        __cr__,
-        collectors,
-      )
-
-      return baml_py.BamlStream[List[partial_types.Tool], List[types.Tool]](
-        raw,
-        lambda x: cast(List[partial_types.Tool], x.cast_to(types, types, partial_types, True)),
-        lambda x: cast(List[types.Tool], x.cast_to(types, types, partial_types, False)),
+        lambda x: cast(Optional[bool], x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(bool, x.cast_to(types, types, partial_types, False)),
         self.__ctx_manager.get(),
       )
     
