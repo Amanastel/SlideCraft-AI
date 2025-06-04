@@ -74,8 +74,8 @@ The platform leverages Google's cutting-edge Gemini AI models to understand your
 
 1. **Clone the PowerPoint Generator**
    ```bash
-   git clone <repository-url>
-   cd AIPlannerExecutor
+   git clone https://github.com/Amanastel/SlideCraft-AI
+   cd SlideCraft-AI
    ```
 
 2. **Install PowerPoint generation dependencies**

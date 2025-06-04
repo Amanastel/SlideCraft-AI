@@ -18,8 +18,8 @@ Before you begin, ensure you have:
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repository-url>
-   cd AIPlannerExecutor
+   git clone https://github.com/Amanastel/SlideCraft-AI
+   cd SlideCraft-AI
    ```
 
 2. **Create virtual environment**
