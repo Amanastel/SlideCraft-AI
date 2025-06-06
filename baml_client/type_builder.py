@@ -22,7 +22,7 @@ from .globals import DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIM
 class TypeBuilder(_TypeBuilder):
     def __init__(self):
         super().__init__(classes=set(
-          ["ImageElement","ImageStyle","OutlinePoint","OutlineSection","PresentationInput","SlideContent","SlideElement",]
+          ["ImageElement","ImageElementEdit","ImageStyle","ImageStyleEdit","OutlinePoint","OutlineSection","PresentationInput","SlideContent","SlideContentWithType","SlideEditRequest","SlideElement","SlideElementEdit",]
         ), enums=set(
           []
         ), runtime=DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME)
@@ -33,8 +33,16 @@ class TypeBuilder(_TypeBuilder):
         return ImageElementAst(self)
 
     @property
+    def ImageElementEdit(self) -> "ImageElementEditAst":
+        return ImageElementEditAst(self)
+
+    @property
     def ImageStyle(self) -> "ImageStyleAst":
         return ImageStyleAst(self)
+
+    @property
+    def ImageStyleEdit(self) -> "ImageStyleEditAst":
+        return ImageStyleEditAst(self)
 
     @property
     def OutlinePoint(self) -> "OutlinePointAst":
@@ -53,8 +61,20 @@ class TypeBuilder(_TypeBuilder):
         return SlideContentAst(self)
 
     @property
+    def SlideContentWithType(self) -> "SlideContentWithTypeAst":
+        return SlideContentWithTypeAst(self)
+
+    @property
+    def SlideEditRequest(self) -> "SlideEditRequestAst":
+        return SlideEditRequestAst(self)
+
+    @property
     def SlideElement(self) -> "SlideElementAst":
         return SlideElementAst(self)
+
+    @property
+    def SlideElementEdit(self) -> "SlideElementEditAst":
+        return SlideElementEditAst(self)
 
 
 
@@ -138,6 +158,84 @@ class ImageElementProperties:
 
     
 
+class ImageElementEditAst:
+    def __init__(self, tb: _TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("ImageElementEdit")
+        self._properties: typing.Set[str] = set([ "id",  "type",  "x",  "y",  "width",  "height",  "src",  "alt",  "caption",  "prompt",  "style", ])
+        self._props = ImageElementEditProperties(self._bldr, self._properties)
+
+    def type(self) -> FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "ImageElementEditProperties":
+        return self._props
+
+
+class ImageElementEditViewer(ImageElementEditAst):
+    def __init__(self, tb: _TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+
+
+
+class ImageElementEditProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
+
+    
+
+    @property
+    def id(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("id"))
+
+    @property
+    def type(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("type"))
+
+    @property
+    def x(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("x"))
+
+    @property
+    def y(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("y"))
+
+    @property
+    def width(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("width"))
+
+    @property
+    def height(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("height"))
+
+    @property
+    def src(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("src"))
+
+    @property
+    def alt(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("alt"))
+
+    @property
+    def caption(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("caption"))
+
+    @property
+    def prompt(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("prompt"))
+
+    @property
+    def style(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("style"))
+
+    
+
 class ImageStyleAst:
     def __init__(self, tb: _TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
@@ -164,6 +262,52 @@ class ImageStyleViewer(ImageStyleAst):
 
 
 class ImageStyleProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
+
+    
+
+    @property
+    def borderRadius(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("borderRadius"))
+
+    @property
+    def objectFit(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("objectFit"))
+
+    @property
+    def marginBottom(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("marginBottom"))
+
+    
+
+class ImageStyleEditAst:
+    def __init__(self, tb: _TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("ImageStyleEdit")
+        self._properties: typing.Set[str] = set([ "borderRadius",  "objectFit",  "marginBottom", ])
+        self._props = ImageStyleEditProperties(self._bldr, self._properties)
+
+    def type(self) -> FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "ImageStyleEditProperties":
+        return self._props
+
+
+class ImageStyleEditViewer(ImageStyleEditAst):
+    def __init__(self, tb: _TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+
+
+
+class ImageStyleEditProperties:
     def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
         self.__bldr = bldr
         self.__properties = properties
@@ -360,6 +504,98 @@ class SlideContentProperties:
 
     
 
+class SlideContentWithTypeAst:
+    def __init__(self, tb: _TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("SlideContentWithType")
+        self._properties: typing.Set[str] = set([ "slide_id",  "background",  "content", ])
+        self._props = SlideContentWithTypeProperties(self._bldr, self._properties)
+
+    def type(self) -> FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "SlideContentWithTypeProperties":
+        return self._props
+
+
+class SlideContentWithTypeViewer(SlideContentWithTypeAst):
+    def __init__(self, tb: _TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+
+
+
+class SlideContentWithTypeProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
+
+    
+
+    @property
+    def slide_id(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("slide_id"))
+
+    @property
+    def background(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("background"))
+
+    @property
+    def content(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("content"))
+
+    
+
+class SlideEditRequestAst:
+    def __init__(self, tb: _TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("SlideEditRequest")
+        self._properties: typing.Set[str] = set([ "slide",  "editPrompt",  "theme", ])
+        self._props = SlideEditRequestProperties(self._bldr, self._properties)
+
+    def type(self) -> FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "SlideEditRequestProperties":
+        return self._props
+
+
+class SlideEditRequestViewer(SlideEditRequestAst):
+    def __init__(self, tb: _TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+
+
+
+class SlideEditRequestProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
+
+    
+
+    @property
+    def slide(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("slide"))
+
+    @property
+    def editPrompt(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("editPrompt"))
+
+    @property
+    def theme(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("theme"))
+
+    
+
 class SlideElementAst:
     def __init__(self, tb: _TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
@@ -395,6 +631,68 @@ class SlideElementProperties:
     @property
     def id(self) -> ClassPropertyViewer:
         return ClassPropertyViewer(self.__bldr.property("id"))
+
+    @property
+    def x(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("x"))
+
+    @property
+    def y(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("y"))
+
+    @property
+    def width(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("width"))
+
+    @property
+    def height(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("height"))
+
+    @property
+    def html(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("html"))
+
+    
+
+class SlideElementEditAst:
+    def __init__(self, tb: _TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("SlideElementEdit")
+        self._properties: typing.Set[str] = set([ "id",  "type",  "x",  "y",  "width",  "height",  "html", ])
+        self._props = SlideElementEditProperties(self._bldr, self._properties)
+
+    def type(self) -> FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "SlideElementEditProperties":
+        return self._props
+
+
+class SlideElementEditViewer(SlideElementEditAst):
+    def __init__(self, tb: _TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+
+
+
+class SlideElementEditProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
+
+    
+
+    @property
+    def id(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("id"))
+
+    @property
+    def type(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("type"))
 
     @property
     def x(self) -> ClassPropertyViewer:

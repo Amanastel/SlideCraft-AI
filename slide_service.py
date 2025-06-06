@@ -295,17 +295,17 @@ def generate_all_images_for_presentation(request_id):
         request_id (str): The ID of the slide request to process
         
     Returns:
-        None: This function logs results and doesn't return values since it runs in a background thread
+        dict: A dictionary containing the results of the image generation process
     """
     if not request_id:
         print("[ERROR] Missing request_id")
-        return  # Don't return Flask response from background thread
+        return {"success": False, "error": "Missing request_id", "generated": 0, "skipped": 0, "errors": []}
 
     print(f"[INFO] Fetching record for request_id: {request_id}")
     record = fetch_request_record(request_id)
     if not record:
         print(f"[ERROR] No record found for request_id {request_id}")
-        return  # Don't return Flask response from background thread
+        return {"success": False, "error": f"No record found for request_id {request_id}", "generated": 0, "skipped": 0, "errors": []}
 
     _, slide_json_str, _ = record
     slide_doc = json.loads(slide_json_str)
@@ -369,12 +369,12 @@ def generate_all_images_for_presentation(request_id):
                             # Construct S3 public URL
                             image_url = f"https://s3.ap-south-1.amazonaws.com/{S3_BUCKET_NAME}/{key}"
 
-
                             print(f"[INFO] Image uploaded to S3: {image_url}")
 
                             # Update content block
                             content["src"] = image_url
                             content["is_image_created"] = True
+                            # Update the global slide_doc dictionary and mark image as created
                             generated_count += 1
                             image_uploaded = True
                             break
@@ -395,6 +395,9 @@ def generate_all_images_for_presentation(request_id):
     # Save updated JSON if any new images were added
     if generated_count > 0:
         try:
+            slide_doc = slide_doc  # Update global reference
+            # Mark the entire presentation as having all images created
+            slide_doc["is_image_created"] = True
             updated_json_str = json.dumps(slide_doc)
             print(f"[INFO] Updating database with new slide JSON...")
             update_slide_record(request_id, updated_json_str)
@@ -402,9 +405,15 @@ def generate_all_images_for_presentation(request_id):
         except Exception as e:
             err = f"Failed to update database: {str(e)}"
             print(f"[ERROR] {err}")
-            return  # Just return, don't try to send Flask response
+            return {
+                "success": False, 
+                "error": err, 
+                "generated": generated_count, 
+                "skipped": skipped_count, 
+                "errors": errors
+            }
 
-    # Log final results (don't return Flask response from background thread)
+    # Log final results
     print(f"[FINAL] Image generation completed!")
     print(f"[FINAL] Generated: {generated_count}, Skipped: {skipped_count}, Total Processed: {generated_count + skipped_count + len(errors)}")
     if errors:
@@ -412,8 +421,16 @@ def generate_all_images_for_presentation(request_id):
     else:
         print(f"[FINAL] No errors encountered!")
     
-    return  # Just return without Flask response
-    
+    # Return success response with details
+    return {
+        "success": True,
+        "message": "Image generation completed successfully",
+        "generated": generated_count,
+        "skipped": skipped_count,
+        "total_processed": generated_count + skipped_count + len(errors),
+        "errors": errors,
+        "has_errors": len(errors) > 0
+    }
     
     
 if __name__ == '__main__':

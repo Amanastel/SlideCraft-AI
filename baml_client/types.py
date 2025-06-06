@@ -54,7 +54,25 @@ class ImageElement(BaseModel):
     prompt: str
     style: "ImageStyle"
 
+class ImageElementEdit(BaseModel):
+    id: str
+    type: str
+    x: int
+    y: int
+    width: int
+    height: int
+    src: str
+    alt: str
+    caption: str
+    prompt: str
+    style: "ImageStyleEdit"
+
 class ImageStyle(BaseModel):
+    borderRadius: str
+    objectFit: str
+    marginBottom: str
+
+class ImageStyleEdit(BaseModel):
     borderRadius: str
     objectFit: str
     marginBottom: str
@@ -77,8 +95,27 @@ class SlideContent(BaseModel):
     background: str
     content: List[Union["SlideElement", "ImageElement"]]
 
+class SlideContentWithType(BaseModel):
+    slide_id: str
+    background: str
+    content: List[Union["SlideElementEdit", "ImageElementEdit"]]
+
+class SlideEditRequest(BaseModel):
+    slide: "SlideContentWithType"
+    editPrompt: str
+    theme: str
+
 class SlideElement(BaseModel):
     id: str
+    x: int
+    y: int
+    width: int
+    height: int
+    html: str
+
+class SlideElementEdit(BaseModel):
+    id: str
+    type: str
     x: int
     y: int
     width: int

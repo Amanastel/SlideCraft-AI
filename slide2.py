@@ -25,10 +25,15 @@ from google.genai import types
 from PIL import Image
 from io import BytesIO
 from slide_service import generate_image_for_content, generate_all_images_for_presentation
+from slide_edit_api import edit_slide_function
 from baml_client.sync_client import b
 from functools import lru_cache
 import time
 from threading import Thread
+import requests
+from urllib.parse import urlparse
+import mimetypes
+import tempfile
 
 
 # Load environment variables
@@ -75,6 +80,8 @@ logger = logging.getLogger(__name__)
 # Headers for SSE
 # Enable CORS for all routes
 CORS(app)  # 🔥 This allows all origins by default
+
+
 def stream_headers():
     return {
         "Content-Type": "text/event-stream",
@@ -83,15 +90,19 @@ def stream_headers():
         "Transfer-Encoding": "chunked",
     }
 
+
 # Configure Gemini API using environment variable
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Initialize Gemini models
 model = GenerativeModel("gemini-1.5-flash")
 
-model2 = genai.GenerativeModel(model_name="gemini-2.0-flash-preview-image-generation")
+model2 = genai.GenerativeModel(
+    model_name="gemini-2.0-flash-preview-image-generation")
 
 # Clean the streamed chunk
+
+
 def clean_chunk(content):
     # Remove any ```json or ``` wrappers
     cleaned = re.sub(r"^```json\s*|```$", "", content.strip())
@@ -120,8 +131,9 @@ def initiate_slide_stream():
 
     return jsonify({"request_id": request_id}), 200
 
+
 def generate_prompt_templateSlide(data):
-    prompt =  f"""
+    prompt = f"""
 You are a professional **Slide Generation AI Assistant** built for modern sales teams. Your role is to help salespeople generate **polished, client-facing PowerPoint slides** from structured sales data — including deal summaries, mind maps, client notes, and strategy outlines.
 
 ---
@@ -383,8 +395,9 @@ This input includes the "theme" property. Adjust your styles accordingly.
 
     raw = response.text.strip()
     print(f"Raw response: {raw}")
-    cleaned = re.sub(r"^```json\s*|```$", "", raw.strip(), flags=re.MULTILINE).strip()
-    
+    cleaned = re.sub(r"^```json\s*|```$", "", raw.strip(),
+                     flags=re.MULTILINE).strip()
+
     print(f"Cleaned response: {cleaned}")
 
     try:
@@ -403,12 +416,15 @@ s3_client = boto3.client(
 )
 
 # Setup AWS S3 client
+
+
 def upload_image_to_s3(image_data: bytes, filename: str) -> str:
     s3_key = f"slides/{filename}.png"
-    s3_client.put_object(Bucket=BUCKET_NAME, Key=s3_key, Body=image_data, ContentType='image/png')
+    s3_client.put_object(Bucket=BUCKET_NAME, Key=s3_key,
+                         Body=image_data, ContentType='image/png')
     return f"{BASE_URL}{s3_key}"
 
-  
+
 def generate_image_from_prompt(prompt: str) -> bytes:
     response = model.generate_content(f"Generate a high-quality PNG image based on the following prompt: {prompt}",
                                       stream=False)
@@ -418,7 +434,6 @@ def generate_image_from_prompt(prompt: str) -> bytes:
             image_data = base64.b64decode(part.inline_data.data)
             break
     return image_data
-
 
 
 def update_slide_json_with_generated_images(slide_json: dict) -> dict:
@@ -431,7 +446,8 @@ def update_slide_json_with_generated_images(slide_json: dict) -> dict:
                     image_bytes = generate_image_from_prompt(prompt)
                     if image_bytes:
                         image_filename = f"{content['id']}_{uuid.uuid4().hex[:8]}"
-                        image_url = upload_image_to_s3(image_bytes, image_filename)
+                        image_url = upload_image_to_s3(
+                            image_bytes, image_filename)
                         content["src"] = image_url
                         print(f"Image uploaded to S3: {image_url}")
                     else:
@@ -439,20 +455,22 @@ def update_slide_json_with_generated_images(slide_json: dict) -> dict:
     return slide_json
 
 
-
 # --- DB fetch logic ---
 def fetch_mindmap_by_request_id(request_id, db_config):
     try:
         conn = pymysql.connect(**db_config)
         with conn.cursor() as cursor:
-            cursor.execute("SELECT mindmap_json FROM slide_requests WHERE id = %s", (request_id,))
+            cursor.execute(
+                "SELECT mindmap_json FROM slide_requests WHERE id = %s", (request_id,))
             result = cursor.fetchone()
         conn.close()
         return result[0] if result else None
     except Exception as e:
         raise e
-    
+
 # Helper to fetch mindmap + slide_json
+
+
 def fetch_request_record(request_id):
     conn = pymysql.connect(**db_config)
     try:
@@ -465,7 +483,8 @@ def fetch_request_record(request_id):
     finally:
         conn.close()
     return row  # (mindmap_json, slide_json, updated_at)
-  
+
+
 def fetch_slide_json(request_id):
     conn = pymysql.connect(**db_config)
     try:
@@ -478,7 +497,8 @@ def fetch_slide_json(request_id):
             return json.loads(row["slide_json"]) if row and row.get("slide_json") else None
     finally:
         conn.close()
-        
+
+
 def update_slide_record(request_id, updated_slide_json):
     conn = pymysql.connect(**db_config)
     try:
@@ -495,8 +515,10 @@ def update_slide_record(request_id, updated_slide_json):
         conn.commit()
     finally:
         conn.close()
-        
+
 # Helper to update slide_json and updated_at
+
+
 def store_slide_json(request_id, slide_json):
     conn = pymysql.connect(**db_config)
     try:
@@ -509,42 +531,7 @@ def store_slide_json(request_id, slide_json):
     finally:
         conn.close()
 
-@app.route("/api/v1/slides/generate-2", methods=["GET"])
-def generate_slides():
-    try:
-        request_id = request.args.get("id")
-        record = fetch_request_record(request_id)
-        if not record:
-            return jsonify({"error": "No record found"}), 404
 
-        mindmap_json, cached_slides, updated_at = record
-
-        if cached_slides:
-            return Response(
-                json.dumps({
-                    "cached": True,
-                    "last_updated": updated_at.strftime("%Y-%m-%d %H:%M:%S") if updated_at else None,
-                    "data": json.loads(cached_slides)
-                }, indent=2),
-                mimetype="application/json"
-            )
-
-        # Generate new slides from mind map
-        response_json = generate_prompt_templateSlide(mindmap_json)
-        print(f"Generated slide JSON: {response_json}")
-        # Store in DB
-        store_slide_json(request_id, response_json)
-
-        return Response(
-            json.dumps({
-                "data": response_json,
-                "cached": False
-            }, indent=2),
-            mimetype='application/json'
-        )
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 @app.route('/generate-slide-images', methods=['POST'])
 def generate_slide_images():
@@ -559,7 +546,8 @@ def generate_slide_images():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
-      
+
+
 @app.route("/api/v1/images/generate", methods=["POST"])
 def generate_image():
     data = request.get_json() or {}
@@ -576,7 +564,7 @@ def generate_image():
         mime_type = "image/png"  # Default fallback
         for part in response.parts:
             mime = getattr(part.inline_data, "mime_type", "")
-            b64   = getattr(part.inline_data, "data", "")
+            b64 = getattr(part.inline_data, "data", "")
             if b64 and mime.startswith("image/"):
                 image_data = base64.b64decode(b64)
                 mime_type = mime
@@ -593,8 +581,8 @@ def generate_image():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-      
-      
+
+
 @app.route("/api/v1/slides/content", methods=["POST"])
 def get_slide_content():
     try:
@@ -618,13 +606,15 @@ def get_slide_content():
         slides = slide_json.get("slides", [])
 
         # Find the target slide
-        target_slide = next((s for s in slides if s.get("slide_id") == slide_id), None)
+        target_slide = next(
+            (s for s in slides if s.get("slide_id") == slide_id), None)
         if not target_slide:
             return jsonify({"error": "Slide not found"}), 404
 
         # Find the target content
         content_items = target_slide.get("content", [])
-        target_content = next((c for c in content_items if c.get("id") == content_id), None)
+        target_content = next(
+            (c for c in content_items if c.get("id") == content_id), None)
         if not target_content:
             return jsonify({"error": "Content not found"}), 404
 
@@ -632,110 +622,9 @@ def get_slide_content():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-      
-  
-@app.route("/api/v1/slides/content/edit-text", methods=["POST"])
-def edit_slide_content():
-    """
-    API endpoint to update text content in slides.
-    
-    This endpoint is for updating text-based content only (headings, paragraphs, lists, etc.).
-    For updating image content, use the /api/v1/slides/content/image endpoint.
-    
-    Requires:
-    - request_id: The ID of the slide request
-    - slide_id: The ID of the slide to update
-    - content_id: The ID of the content element to update
-    - prompt: The new prompt to generate updated content
-    
-    Returns:
-    - The updated content element
-    """
-    try:
-        data = request.get_json()
-        request_id = data.get("request_id")
-        slide_id = data.get("slide_id")
-        content_id = data.get("content_id")
-        new_prompt = data.get("prompt")
 
-        if not (request_id and slide_id and content_id and new_prompt):
-            return jsonify({"error": "Missing one or more required fields"}), 400
 
-        # Fetch record from DB
-        record = fetch_request_record(request_id)
-        if not record:
-            return jsonify({"error": "No record found for this request ID"}), 404
 
-        mindmap_json, slide_json_str, updated_at = record
-
-        # Parse slide JSON
-        slide_json = json.loads(slide_json_str)
-        slides = slide_json.get("slides", [])
-
-        # Find the target slide
-        target_slide = next((s for s in slides if s.get("slide_id") == slide_id), None)
-        if not target_slide:
-            return jsonify({"error": "Slide not found"}), 404
-
-        # Find the target content
-        content_items = target_slide.get("content", [])
-        target_content = next((c for c in content_items if c.get("id") == content_id), None)
-        if not target_content:
-            return jsonify({"error": "Content not found"}), 404
-
-        print(target_content)
-        # Determine content type and update based on prompt
-        content_type = target_content.get("type")
-        
-        # This API is only for non-image content
-        if content_type == "image":
-            return jsonify({
-                "error": "This API cannot be used to update image content. Please use the /api/v1/slides/content/image endpoint instead."
-            }), 400
-        
-        # For text content (heading, paragraph, bullet_list, etc.)
-        # Get the old content to provide context for updating
-        
-        old_content = target_content.get("text", "")
-        
-
-        # Generate new text based on the prompt with context
-        model = genai.GenerativeModel(model_name="gemini-1.5-flash")
-        generate_prompt = f"""
-        You are a professional slide content writer. You need to update the following slide content.
-        
-        Content type: {content_type}
-        Current content: "{old_content}"
-        
-        Generate new content based on this prompt:
-        {new_prompt}
-        
-        Keep the style consistent with presentation slides - be professional, concise, and impactful.
-        Maintain the appropriate length and format for this type of slide element.
-        Only return the generated text, with no additional explanation or formatting.
-        """
-        
-        response = model.generate_content(generate_prompt)
-        new_text = response.text.strip()
-        
-        logger.info(f"Updated content for {content_id} from: '{old_content}' to: '{new_text}'")
-        
-        # Update the content with new text
-        target_content["text"] = new_text
-
-        # Update the slide JSON in the database
-        updated_slide_json = json.dumps(slide_json)
-        update_slide_record(request_id, updated_slide_json)
-
-        return jsonify({
-            "message": "Content updated successfully",
-            "data": target_content
-        }), 200
-
-    except Exception as e:
-        logger.error(f"Error updating slide content: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-      
 
 @app.route("/api/v1/slides/content/image", methods=["POST"])
 def image_endpoint():
@@ -754,23 +643,169 @@ def image_endpoint():
         return jsonify({"error": str(re)}), 500
     except Exception as e:
         return jsonify({"error": "Internal error"}), 500
-  
+
+
 @app.route("/", methods=["GET"])
 def hello():
     return "Hello, this is the LangChain Google Gemini 1.5 Flash API for generating slides!"
 
 
+@app.route("/api/v1/slides/content/edit-text", methods=["POST"])
+def edit_slide_content2():
+    """
+    Update text content in slides.
+    If `content_id` is provided, updates only that content block.
+    If `content_id` is missing, updates all text-based content blocks in the slide.
+    """
+    try:
+        data = request.get_json()
+        request_id = data.get("request_id")
+        slide_id = data.get("slide_id")
+        content_id = data.get("content_id")
+        new_prompt = data.get("prompt")
 
+        if not (request_id and slide_id and new_prompt):
+            return jsonify({"error": "Missing required fields"}), 400
 
+        # Fetch from DB
+        record = fetch_request_record(request_id)
+        if not record:
+            return jsonify({"error": "No record found for this request ID"}), 404
 
+        mindmap_json, slide_json_str, updated_at = record
+        slide_json = json.loads(slide_json_str)
+        slides = slide_json.get("slides", [])
+        target_slide = next(
+            (s for s in slides if s.get("slide_id") == slide_id), None)
 
+        if not target_slide:
+            return jsonify({"error": "Slide not found"}), 404
 
+        content_items = target_slide.get("content", [])
+        content_type = target_slide.get("type")
 
+        model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
+        # ========== CASE 1: Targeted content update ==========
+        if content_id:
+
+            if not (request_id and slide_id and content_id and new_prompt):
+                return jsonify({"error": "Missing one or more required fields"}), 400
+
+            # Fetch record from DB
+            record = fetch_request_record(request_id)
+            if not record:
+                return jsonify({"error": "No record found for this request ID"}), 404
+
+            mindmap_json, slide_json_str, updated_at = record
+
+            # Parse slide JSON
+            slide_json = json.loads(slide_json_str)
+            slides = slide_json.get("slides", [])
+
+            # Find the target slide
+            target_slide = next(
+                (s for s in slides if s.get("slide_id") == slide_id), None)
+            if not target_slide:
+                return jsonify({"error": "Slide not found"}), 404
+
+            # Find the target content
+            content_items = target_slide.get("content", [])
+            target_content = next(
+                (c for c in content_items if c.get("id") == content_id), None)
+            if not target_content:
+                return jsonify({"error": "Content not found"}), 404
+
+            print(target_content)
+            # Determine content type and update based on prompt
+            content_type = target_content.get("type")
+
+            # This API is only for non-image content
+            if content_type == "image":
+                return jsonify({
+                    "error": "This API cannot be used to update image content. Please use the /api/v1/slides/content/image endpoint instead."
+                }), 400
+
+            # For text content (heading, paragraph, bullet_list, etc.)
+            # Get the old content to provide context for updating
+
+            old_content = target_content.get("html", "")
+
+            # Generate new text based on the prompt with context
+            model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+            generate_prompt = f"""
+            You are a professional slide content writer. You need to update the following slide content.
+            
+            Content type: {content_type}
+            Current content: "{old_content}"
+            
+            Generate new content based on this prompt:
+            {new_prompt}
+            
+            Keep the style consistent with presentation slides - be professional, concise, and impactful.
+            Maintain the appropriate length and format for this type of slide element.
+            Only return the generated text, with no additional explanation or formatting.
+            """
+
+            response = model.generate_content(generate_prompt)
+            new_text = response.text.strip()
+
+            logger.info(
+                f"Updated content for {content_id} from: '{old_content}' to: '{new_text}'")
+
+            # Update the content with new text
+            target_content["html"] = new_text
+
+            # Update the slide JSON in the database
+            updated_slide_json = json.dumps(slide_json)
+            update_slide_record(request_id, updated_slide_json)
+
+            return jsonify({
+                "message": "Content updated successfully",
+                "data": target_content
+            }), 200
+
+        else:
+            target_slide = next(
+                (s for s in slides if s.get("slide_id") == slide_id), None)
+            if not target_slide:
+                return jsonify({"error": "Slide not found"}), 404
+
+            # Edit the slide using the edit_slide_function
+            response = edit_slide_function(target_slide, new_prompt)
+            new_updated_slide = response.get("editedSlide", {})
+            print(f"New updated slide: {new_updated_slide}")
+
+            # Find and update the slide in the slides array
+            for i, slide in enumerate(slides):
+                if slide.get("slide_id") == slide_id:
+                    slides[i] = new_updated_slide
+                    break
+
+            # Update the slide JSON in the database
+            updated_slide_json = json.dumps(slide_json)
+            update_slide_record(request_id, updated_slide_json)
+
+            logger.info(f"Updated entire slide {slide_id} with new content based on prompt: {new_prompt}")
+
+            return jsonify({
+                "message": "Slide updated successfully",
+                "data": response
+            }), 200
+    except ValueError as ve:
+        logger.error(f"Value error: {str(ve)}")
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        logger.error(f"Error updating slide content: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        logger.error(f"Error updating slide content: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 
 def fetch_request_record_cached(request_id):
     return fetch_request_record(request_id)
+
 
 @app.route('/api/v1/slides/generate', methods=['GET'])
 def generate_presentation():
@@ -801,7 +836,7 @@ def generate_presentation():
         # Parse and prepare input data
         if isinstance(input_data, str):
             input_data = json.loads(input_data)
-            
+
         # Structure for BAML - ensure proper type conversion
         try:
             presentation_input = {
@@ -869,7 +904,8 @@ def generate_presentation():
                     })
 
                 # Only add non-None values
-                content.append({k: v for k, v in element_dict.items() if v is not None})
+                content.append(
+                    {k: v for k, v in element_dict.items() if v is not None})
 
             slide_dict = {
                 "slide_id": slide.slide_id,
@@ -880,17 +916,38 @@ def generate_presentation():
             slides_json.append(slide_dict)
 
         response_data = {"slides": slides_json}
-        
-        # Cache the result
-        # presentation_cache[cache_key] = (time.time(), response_data)
-        
+
         # Store in DB asynchronously
         store_slide_json(request_id, response_data)
+        
+        # Generate images for the presentation
+        # image_response = generate_all_images_for_presentation(request_id)
+            # Fire-and-forget async processing
+        thread = Thread(target=generate_all_images_for_presentation,
+                        args=(request_id,))
+        thread.start()
+        # Get the updated record from DB after storing
+        # updated_record = fetch_request_record(request_id)
+        # if updated_record:
+        #     input_data, updated_slides, updated_at = updated_record
+        #     if updated_slides:
+        #         data = json.loads(updated_slides)
+        #         return Response(
+        #             json.dumps({
+        #                 "cached": False,
+        #                 "last_updated": updated_at.strftime("%Y-%m-%d %H:%M:%S") if updated_at else None,
+        #                 "data": data
+        #             }, indent=2),
+        #             mimetype="application/json"
+        #         )
 
+        # Fallback response if DB update failed
         return Response(
             json.dumps({
+                "cached": False,
+                "last_updated": None,
                 "data": response_data,
-                "cached": False
+                # "images": image_response
             }, indent=2),
             mimetype="application/json"
         )
@@ -898,21 +955,8 @@ def generate_presentation():
     except Exception as e:
         logger.error(f"Error in generate_presentation: {str(e)}")
         return jsonify({'error': str(e)}), 500
-        
     
-# @app.route("/api/v1/slides/generate-all-images", methods=["POST"])
-# def generate_all_images():
-#     """
-#     Endpoint to generate images for all slides in a presentation.
-#     Expects a JSON payload with 'request_id' and 'slide_id'.
-#     """
-#     data = request.get_json() or {}
-#     request_id = data.get("request_id")
-#     print(f"Request ID: {request_id}")
-#     if not request_id:
-#         return jsonify({"error": "Missing request ID"}), 400
-#     return generate_all_images_for_presentation(request_id)
-    
+
 @app.route("/api/v1/slides/generate-all-images", methods=["POST"])
 def generate_all_images():
     data = request.get_json() or {}
@@ -921,10 +965,605 @@ def generate_all_images():
         return jsonify({"error": "Missing request ID"}), 400
 
     # Fire-and-forget async processing
-    thread = Thread(target=generate_all_images_for_presentation, args=(request_id,))
+    thread = Thread(target=generate_all_images_for_presentation,
+                    args=(request_id,))
     thread.start()
+    
+    
 
-    return jsonify({"success": True, "message": "Image generation started"}), 202
+    return jsonify({"success": True, "message": "Image generation started","data": generate_all_images_for_presentation(request_id)}), 202
 
-if __name__ == "__main__":
+
+@app.route("/api/v1/files/upload", methods=["POST"])
+def upload_file():
+    """
+    Upload any file to S3 and return the URL
+    
+    Expected request:
+    - multipart/form-data with 'file' field
+    OR
+    - JSON with base64 encoded file data
+    
+    Returns:
+    {
+        "success": true,
+        "url": "https://s3.amazonaws.com/bucket/path/to/file.ext",
+        "filename": "generated_filename.ext",
+        "file_type": "pdf|docx|png|etc",
+        "content_type": "application/pdf"
+    }
+    """
+    try:
+        file_data = None
+        filename = None
+        content_type = None
+        
+        # Check if it's a file upload (multipart/form-data)
+        if 'file' in request.files:
+            file = request.files['file']
+            if file.filename == '':
+                return jsonify({"error": "No file selected"}), 400
+            
+            # Get file extension
+            file_extension = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+            
+            # Allow all file types - no restrictions
+            # Common file types with their content types
+            content_type_map = {
+                'pdf': 'application/pdf',
+                'doc': 'application/msword',
+                'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'xls': 'application/vnd.ms-excel',
+                'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'ppt': 'application/vnd.ms-powerpoint',
+                'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                'txt': 'text/plain',
+                'md': 'text/markdown',
+                'html': 'text/html',
+                'csv': 'text/csv',
+                'json': 'application/json',
+                'xml': 'application/xml',
+                'zip': 'application/zip',
+                'rar': 'application/x-rar-compressed',
+                '7z': 'application/x-7z-compressed',
+                'png': 'image/png',
+                'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg',
+                'gif': 'image/gif',
+                'bmp': 'image/bmp',
+                'webp': 'image/webp',
+                'svg': 'image/svg+xml',
+                'mp4': 'video/mp4',
+                'avi': 'video/x-msvideo',
+                'mov': 'video/quicktime',
+                'mp3': 'audio/mpeg',
+                'wav': 'audio/wav',
+                'flac': 'audio/flac'
+            }
+            
+            content_type = content_type_map.get(file_extension, 'application/octet-stream')
+            
+            # Read file data
+            file_data = file.read()
+            filename = f"{uuid.uuid4().hex[:8]}.{file_extension}" if file_extension else f"{uuid.uuid4().hex[:8]}"
+            
+        # Check if it's JSON with base64 data
+        elif request.is_json:
+            data = request.get_json()
+            base64_data = data.get("file_base64")
+            custom_filename = data.get("filename")
+            file_type = data.get("file_type", "")
+            
+            if not base64_data:
+                return jsonify({"error": "Missing 'file_base64' field in JSON"}), 400
+            
+            try:
+                # Handle data URL format (data:application/pdf;base64,...)
+                if base64_data.startswith('data:'):
+                    content_type = base64_data.split(';')[0].split(':')[1]
+                    base64_data = base64_data.split(',')[1]
+                
+                # Decode base64 data
+                file_data = base64.b64decode(base64_data)
+                
+                # Use custom filename if provided, otherwise generate one
+                if custom_filename:
+                    filename = custom_filename
+                else:
+                    # Try to determine extension from file_type or content_type
+                    extension = ""
+                    if file_type:
+                        extension = f".{file_type}"
+                    elif content_type:
+                        type_to_ext = {
+                            'application/pdf': '.pdf',
+                            'application/msword': '.doc',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+                            'text/plain': '.txt',
+                            'image/png': '.png',
+                            'image/jpeg': '.jpg'
+                        }
+                        extension = type_to_ext.get(content_type, '')
+                    
+                    filename = f"{uuid.uuid4().hex[:8]}{extension}"
+                
+                # Set content type if not already set
+                if not content_type:
+                    file_extension = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+                    content_type_map = {
+                        'pdf': 'application/pdf',
+                        'doc': 'application/msword',
+                        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'txt': 'text/plain',
+                        'png': 'image/png',
+                        'jpg': 'image/jpeg',
+                        'jpeg': 'image/jpeg'
+                    }
+                    content_type = content_type_map.get(file_extension, 'application/octet-stream')
+                    
+            except Exception as e:
+                return jsonify({"error": f"Invalid base64 data: {str(e)}"}), 400
+        else:
+            return jsonify({"error": "No file data provided. Use multipart/form-data with 'file' field or JSON with 'file_base64' field"}), 400
+        
+        # Validate file data size (max 60MB for general files)
+        max_size = 200 * 1024 * 1024  # 60MB
+        if len(file_data) > max_size:
+            return jsonify({"error": f"File too large. Maximum size: {max_size / 1024 / 1024}MB"}), 400
+        
+        # Upload to S3
+        try:
+            s3_key = f"uploads/{filename}"
+            
+            # Use the existing S3 client (s3) defined earlier in the file
+            s3.put_object(
+                Bucket=S3_BUCKET_NAME,
+                Key=s3_key,
+                Body=file_data,
+                ContentType=content_type,
+                # Remove ACL to avoid access denied errors
+            )
+            
+            # Construct the public URL
+            file_url = f"https://s3.{AWS_REGION}.amazonaws.com/{S3_BUCKET_NAME}/{s3_key}"
+            
+            # Get file type from filename
+            file_type = filename.rsplit('.', 1)[1].lower() if '.' in filename else 'unknown'
+            
+            logger.info(f"File uploaded successfully: {file_url}")
+            
+            return jsonify({
+                "success": True,
+                "url": file_url,
+                "filename": filename,
+                "file_type": file_type,
+                "content_type": content_type,
+                "size_bytes": len(file_data)
+            })
+            
+        except Exception as e:
+            logger.error(f"S3 upload failed: {str(e)}")
+            return jsonify({"error": f"Failed to upload to S3: {str(e)}"}), 500
+            
+    except Exception as e:
+        logger.error(f"File upload error: {str(e)}")
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+
+
+
+@app.route("/api/v1/files/summarize", methods=["POST"])
+def summarize_file():
+    """
+    Summarize a file from a given URL
+    
+    Expected request body:
+    {
+        "file_url": "https://example.com/document.pdf",
+        "summary_type": "brief|detailed|key_points", // optional, defaults to "brief"
+        "max_length": 500 // optional, max words in summary
+    }
+    
+    Returns:
+    {
+        "success": true,
+        "summary": "Generated summary text...",
+        "file_info": {
+            "url": "original_url",
+            "file_type": "pdf|docx|txt|etc",
+            "file_size": 12345,
+            "title": "extracted_title"
+        },
+        "summary_type": "brief"
+    }
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+        
+        file_url = data.get("file_url")
+        summary_type = data.get("summary_type", "brief")
+        max_length = data.get("max_length", 500)
+        
+        if not file_url:
+            return jsonify({"error": "Missing 'file_url' field"}), 400
+        
+        # Validate summary type
+        # valid_summary_types = ["brief", "detailed", "key_points"]
+        # if summary_type not in valid_summary_types:
+        #     return jsonify({"error": f"Invalid summary_type. Must be one of: {', '.join(valid_summary_types)}"}), 400
+        
+        # Validate max_length
+        if not isinstance(max_length, int) or max_length < 50 or max_length > 2000:
+            return jsonify({"error": "max_length must be an integer between 50 and 2000"}), 400
+        
+        # Download and extract file content
+        try:
+            file_content, file_info = download_and_extract_content(file_url)
+            print(f"File info: {file_info}")  # Log file info for debugging
+            print(f"Extracted file content: {file_content[:100]}...")  # Log first 100 chars for debugging
+        except Exception as e:
+            return jsonify({"error": f"Failed to download or extract file content: {str(e)}"}), 400
+        
+        # Generate summary using AI
+        try:
+            summary = generate_file_summary(file_content, summary_type, max_length, file_info)
+        except Exception as e:
+            return jsonify({"error": f"Failed to generate summary: {str(e)}"}), 500
+        
+        return jsonify({
+            "success": True,
+            "summary": summary,
+            "file_info": file_info,
+            "summary_type": summary_type,
+            "content_length": len(file_content),
+            "summary_length": len(summary.split())
+        })
+        
+    except Exception as e:
+        logger.error(f"File summarization error: {str(e)}")
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+
+@app.route("/api/v1/files/extract", methods=["POST"])
+def extract_file_content():
+    """
+    Extract raw content from a file at the given URL without AI summarization
+    
+    Expected request body:
+    {
+        "file_url": "https://example.com/document.pdf",
+        "include_metadata": true, // optional, defaults to true
+        "max_content_length": 50000 // optional, max characters to return, defaults to 50000
+    }
+    
+    Returns:
+    {
+        "success": true,
+        "content": "Raw extracted text content...",
+        "file_info": {
+            "url": "original_url",
+            "file_name": "document.pdf",
+            "file_type": "pdf",
+            "file_size": 12345,
+            "content_type": "application/pdf",
+            "title": "extracted_title"
+        },
+        "content_stats": {
+            "total_characters": 15000,
+            "total_words": 2500,
+            "total_lines": 150,
+            "truncated": false
+        }
+    }
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+        
+        file_url = data.get("file_url")
+        include_metadata = data.get("include_metadata", True)
+        max_content_length = data.get("max_content_length", 50000)
+        
+        if not file_url:
+            return jsonify({"error": "Missing 'file_url' field"}), 400
+        
+        # Validate max_content_length
+        if not isinstance(max_content_length, int) or max_content_length < 100 or max_content_length > 100000:
+            return jsonify({"error": "max_content_length must be an integer between 100 and 100000"}), 400
+        
+        # Download and extract file content
+        try:
+            file_content, file_info = download_and_extract_content(file_url)
+            logger.info(f"File content extracted: {len(file_content)} characters")
+        except Exception as e:
+            return jsonify({"error": f"Failed to download or extract file content: {str(e)}"}), 400
+        
+        # Calculate content statistics
+        total_characters = len(file_content)
+        total_words = len(file_content.split())
+        total_lines = len(file_content.split('\n'))
+        
+        # Truncate content if necessary
+        truncated = False
+        if total_characters > max_content_length:
+            file_content = file_content[:max_content_length] + "... [Content truncated]"
+            truncated = True
+        
+        # Prepare response
+        response_data = {
+            "success": True,
+            "content": file_content,
+            "content_stats": {
+                "total_characters": total_characters,
+                "total_words": total_words,
+                "total_lines": total_lines,
+                "truncated": truncated,
+                "returned_characters": len(file_content)
+            }
+        }
+        
+        # Include file metadata if requested
+        if include_metadata:
+            response_data["file_info"] = file_info
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        logger.error(f"File content extraction error: {str(e)}")
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+
+# ...existing code...
+
+def download_and_extract_content(file_url):
+    """
+    Download file from URL and extract text content
+    
+    Returns:
+        tuple: (content_text, file_info_dict)
+    """
+    import requests
+    from urllib.parse import urlparse
+    import mimetypes
+    import PyPDF2
+    from docx import Document
+    import tempfile
+    import os
+    
+    try:
+        # Parse URL and get basic info
+        parsed_url = urlparse(file_url)
+        file_name = os.path.basename(parsed_url.path) or "unknown_file"
+        
+        # Download file
+        response = requests.get(file_url, timeout=30)
+        response.raise_for_status()
+        
+        # Get file info
+        content_type = response.headers.get('content-type', '')
+        file_size = len(response.content)
+        
+        # Determine file type
+        file_extension = os.path.splitext(file_name)[1].lower()
+        if not file_extension:
+            # Try to guess from content type
+            extension_map = {
+                'application/pdf': '.pdf',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+                'text/plain': '.txt',
+                'text/html': '.html',
+                'application/json': '.json'
+            }
+            file_extension = extension_map.get(content_type, '.txt')
+        
+        file_info = {
+            "url": file_url,
+            "file_name": file_name,
+            "file_type": file_extension.lstrip('.'),
+            "file_size": file_size,
+            "content_type": content_type,
+            "title": ""
+        }
+        
+        # Extract content based on file type
+        if file_extension == '.pdf':
+            content = extract_pdf_content(response.content)
+        elif file_extension == '.docx':
+            content = extract_docx_content(response.content)
+        elif file_extension in ['.txt', '.md']:
+            content = response.text
+        elif file_extension == '.html':
+            content = extract_html_content(response.text)
+        elif file_extension == '.json':
+            content = extract_json_content(response.text)
+        else:
+            # Try to decode as text
+            try:
+                content = response.text
+            except:
+                raise ValueError(f"Unsupported file type: {file_extension}")
+        
+        # Extract title from content
+        title = extract_title_from_content(content, file_extension)
+        file_info["title"] = title
+        
+        # Validate content length
+        if len(content.strip()) < 10:
+            raise ValueError("File appears to be empty or content could not be extracted")
+        
+        return content, file_info
+        
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to download file: {str(e)}")
+    except Exception as e:
+        raise Exception(f"Failed to process file: {str(e)}")
+
+
+def extract_pdf_content(pdf_data):
+    """Extract text from PDF data"""
+    try:
+        try:
+            import PyPDF2
+        except ImportError:
+            raise Exception("PyPDF2 is required for PDF processing. Install with: pip install PyPDF2==3.0.1")
+        
+        from io import BytesIO
+        
+        pdf_reader = PyPDF2.PdfReader(BytesIO(pdf_data))
+        content = ""
+        
+        for page in pdf_reader.pages:
+            content += page.extract_text() + "\n"
+        
+        return content.strip()
+    except Exception as e:
+        raise Exception(f"Failed to extract PDF content: {str(e)}")
+
+
+def extract_docx_content(docx_data):
+    """Extract text from DOCX data"""
+    try:
+        try:
+            from docx import Document
+        except ImportError:
+            raise Exception("python-docx is required for DOCX processing. Install with: pip install python-docx==1.1.0")
+        
+        from io import BytesIO
+        
+        doc = Document(BytesIO(docx_data))
+        content = ""
+        
+        for paragraph in doc.paragraphs:
+            content += paragraph.text + "\n"
+        
+        return content.strip()
+    except Exception as e:
+        raise Exception(f"Failed to extract DOCX content: {str(e)}")
+
+
+def extract_html_content(html_text):
+    """Extract text from HTML"""
+    try:
+        try:
+            from bs4 import BeautifulSoup
+        except ImportError:
+            # Fallback: simple HTML tag removal
+            import re
+            clean = re.compile('<.*?>')
+            return re.sub(clean, '', html_text).strip()
+        
+        soup = BeautifulSoup(html_text, 'html.parser')
+        # Remove script and style elements
+        for script in soup(["script", "style"]):
+            script.decompose()
+        
+        return soup.get_text(separator='\n').strip()
+    except Exception as e:
+        # Fallback: simple HTML tag removal
+        import re
+        clean = re.compile('<.*?>')
+        return re.sub(clean, '', html_text).strip()
+
+
+def extract_json_content(json_text):
+    """Extract readable content from JSON"""
+    try:
+        import json
+        data = json.loads(json_text)
+        
+        # Convert JSON to readable text
+        def json_to_text(obj, level=0):
+            indent = "  " * level
+            text = ""
+            
+            if isinstance(obj, dict):
+                for key, value in obj.items():
+                    text += f"{indent}{key}: "
+                    if isinstance(value, (dict, list)):
+                        text += f"\n{json_to_text(value, level + 1)}"
+                    else:
+                        text += f"{value}\n"
+            elif isinstance(obj, list):
+                for i, item in enumerate(obj):
+                    text += f"{indent}[{i}]: "
+                    if isinstance(item, (dict, list)):
+                        text += f"\n{json_to_text(item, level + 1)}"
+                    else:
+                        text += f"{item}\n"
+            else:
+                text += f"{indent}{obj}\n"
+            
+            return text
+        
+        return json_to_text(data)
+    except:
+        return json_text
+
+
+def extract_title_from_content(content, file_type):
+    """Extract title from content"""
+    lines = content.split('\n')
+    
+    # Get first non-empty line as potential title
+    for line in lines[:10]:  # Check first 10 lines
+        line = line.strip()
+        if line and len(line) > 3:
+            # Clean up the title
+            title = line[:100]  # Limit to 100 chars
+            return title
+    
+    return "Untitled Document"
+
+
+def generate_file_summary(content, summary_type, max_length, file_info):
+    """Generate AI summary of the file content"""
+    
+    # Prepare the prompt based on summary type
+    if summary_type == "brief":
+        summary_instruction = f"Provide a brief, concise summary in {max_length} words or less that captures the main purpose and key information."
+    elif summary_type == "detailed":
+        summary_instruction = f"Provide a detailed summary in {max_length} words or less that covers the main topics, key findings, and important details."
+    elif summary_type == "key_points":
+        summary_instruction = f"Extract and list the key points, main findings, or important information in bullet format, using {max_length} words or less."
+    
+    else:
+        summary_instruction = summary_type + f" this is user prompt, base on this prompt, generate a summary "
+    prompt = f"""
+        You are a professional document summarization AI. Analyze the following document and provide a summary based on the instructions.
+
+        Document Information:
+        - File Type: {file_info.get('file_type', 'unknown')}
+        - Title: {file_info.get('title', 'Unknown')}
+        - Size: {file_info.get('file_size', 0)} bytes
+
+        Summary Instructions: {summary_instruction}
+
+        Document Content:
+        {content[:8000]}  # Limit content to avoid token limits
+
+        Please provide a clear, well-structured summary that helps the reader understand the document's content and purpose.
+        """
+
+    try:
+        model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        
+        summary = response.text.strip()
+        
+        # Ensure summary doesn't exceed max_length
+        words = summary.split()
+        if len(words) > max_length:
+            summary = ' '.join(words[:max_length]) + "..."
+        
+        return summary
+        
+    except Exception as e:
+        raise Exception(f"AI summarization failed: {str(e)}")
+
+
+if __name__ == '__main__':
+    # Run the Flask app
     app.run(port=8086, debug=True, threaded=True)

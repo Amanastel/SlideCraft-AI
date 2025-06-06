@@ -37,6 +37,52 @@ class HttpRequest:
       self.__ctx_manager = ctx_manager
 
     
+    def EditMultipleSlides(
+        self,
+        requests: List[types.SlideEditRequest],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return self.__runtime.build_request_sync(
+        "EditMultipleSlides",
+        {
+          "requests": requests,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
+    def EditSlide(
+        self,
+        request: types.SlideEditRequest,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return self.__runtime.build_request_sync(
+        "EditSlide",
+        {
+          "request": request,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
     def GeneratePresentation(
         self,
         input: types.PresentationInput,
@@ -53,6 +99,29 @@ class HttpRequest:
         "GeneratePresentation",
         {
           "input": input,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
+    def ValidateEditedSlide(
+        self,
+        originalSlide: types.SlideContentWithType,editedSlide: types.SlideContentWithType,editPrompt: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return self.__runtime.build_request_sync(
+        "ValidateEditedSlide",
+        {
+          "originalSlide": originalSlide,"editedSlide": editedSlide,"editPrompt": editPrompt,
         },
         self.__ctx_manager.get(),
         tb,
@@ -94,6 +163,52 @@ class HttpStreamRequest:
       self.__ctx_manager = ctx_manager
 
     
+    def EditMultipleSlides(
+        self,
+        requests: List[types.SlideEditRequest],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return self.__runtime.build_request_sync(
+        "EditMultipleSlides",
+        {
+          "requests": requests,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
+    def EditSlide(
+        self,
+        request: types.SlideEditRequest,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return self.__runtime.build_request_sync(
+        "EditSlide",
+        {
+          "request": request,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
     def GeneratePresentation(
         self,
         input: types.PresentationInput,
@@ -110,6 +225,29 @@ class HttpStreamRequest:
         "GeneratePresentation",
         {
           "input": input,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
+    def ValidateEditedSlide(
+        self,
+        originalSlide: types.SlideContentWithType,editedSlide: types.SlideContentWithType,editPrompt: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return self.__runtime.build_request_sync(
+        "ValidateEditedSlide",
+        {
+          "originalSlide": originalSlide,"editedSlide": editedSlide,"editPrompt": editPrompt,
         },
         self.__ctx_manager.get(),
         tb,

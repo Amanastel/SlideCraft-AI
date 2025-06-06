@@ -50,7 +50,25 @@ class ImageElement(BaseModel):
     prompt: Optional[str] = None
     style: Optional["ImageStyle"] = None
 
+class ImageElementEdit(BaseModel):
+    id: Optional[str] = None
+    type: Optional[str] = None
+    x: Optional[int] = None
+    y: Optional[int] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
+    src: Optional[str] = None
+    alt: Optional[str] = None
+    caption: Optional[str] = None
+    prompt: Optional[str] = None
+    style: Optional["ImageStyleEdit"] = None
+
 class ImageStyle(BaseModel):
+    borderRadius: Optional[str] = None
+    objectFit: Optional[str] = None
+    marginBottom: Optional[str] = None
+
+class ImageStyleEdit(BaseModel):
     borderRadius: Optional[str] = None
     objectFit: Optional[str] = None
     marginBottom: Optional[str] = None
@@ -73,8 +91,27 @@ class SlideContent(BaseModel):
     background: Optional[str] = None
     content: List[Union["SlideElement", "ImageElement"]]
 
+class SlideContentWithType(BaseModel):
+    slide_id: Optional[str] = None
+    background: Optional[str] = None
+    content: List[Union["SlideElementEdit", "ImageElementEdit"]]
+
+class SlideEditRequest(BaseModel):
+    slide: Optional["SlideContentWithType"] = None
+    editPrompt: Optional[str] = None
+    theme: Optional[str] = None
+
 class SlideElement(BaseModel):
     id: Optional[str] = None
+    x: Optional[int] = None
+    y: Optional[int] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
+    html: Optional[str] = None
+
+class SlideElementEdit(BaseModel):
+    id: Optional[str] = None
+    type: Optional[str] = None
     x: Optional[int] = None
     y: Optional[int] = None
     width: Optional[int] = None

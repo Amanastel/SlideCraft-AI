@@ -98,6 +98,60 @@ class BamlSyncClient:
       return BamlSyncClient(self.__runtime, self.__ctx_manager, new_options)
 
     
+    def EditMultipleSlides(
+        self,
+        requests: List[types.SlideEditRequest],
+        baml_options: BamlCallOptions = {},
+    ) -> List[types.SlideContentWithType]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+
+      raw = self.__runtime.call_function_sync(
+        "EditMultipleSlides",
+        {
+          "requests": requests,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(List[types.SlideContentWithType], raw.cast_to(types, types, partial_types, False))
+    
+    def EditSlide(
+        self,
+        request: types.SlideEditRequest,
+        baml_options: BamlCallOptions = {},
+    ) -> types.SlideContentWithType:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+
+      raw = self.__runtime.call_function_sync(
+        "EditSlide",
+        {
+          "request": request,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(types.SlideContentWithType, raw.cast_to(types, types, partial_types, False))
+    
     def GeneratePresentation(
         self,
         input: types.PresentationInput,
@@ -124,6 +178,33 @@ class BamlSyncClient:
         collectors,
       )
       return cast(List[types.SlideContent], raw.cast_to(types, types, partial_types, False))
+    
+    def ValidateEditedSlide(
+        self,
+        originalSlide: types.SlideContentWithType,editedSlide: types.SlideContentWithType,editPrompt: str,
+        baml_options: BamlCallOptions = {},
+    ) -> bool:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+
+      raw = self.__runtime.call_function_sync(
+        "ValidateEditedSlide",
+        {
+          "originalSlide": originalSlide,"editedSlide": editedSlide,"editPrompt": editPrompt,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(bool, raw.cast_to(types, types, partial_types, False))
     
     def ValidatePresentation(
         self,
@@ -165,6 +246,74 @@ class BamlStreamClient:
       self.__baml_options = baml_options or {}
 
     
+    def EditMultipleSlides(
+        self,
+        requests: List[types.SlideEditRequest],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[List[partial_types.SlideContentWithType], List[types.SlideContentWithType]]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+
+      raw = self.__runtime.stream_function_sync(
+        "EditMultipleSlides",
+        {
+          "requests": requests,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlSyncStream[List[partial_types.SlideContentWithType], List[types.SlideContentWithType]](
+        raw,
+        lambda x: cast(List[partial_types.SlideContentWithType], x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(List[types.SlideContentWithType], x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
+    def EditSlide(
+        self,
+        request: types.SlideEditRequest,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[partial_types.SlideContentWithType, types.SlideContentWithType]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+
+      raw = self.__runtime.stream_function_sync(
+        "EditSlide",
+        {
+          "request": request,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlSyncStream[partial_types.SlideContentWithType, types.SlideContentWithType](
+        raw,
+        lambda x: cast(partial_types.SlideContentWithType, x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(types.SlideContentWithType, x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
     def GeneratePresentation(
         self,
         input: types.PresentationInput,
@@ -196,6 +345,42 @@ class BamlStreamClient:
         raw,
         lambda x: cast(List[partial_types.SlideContent], x.cast_to(types, types, partial_types, True)),
         lambda x: cast(List[types.SlideContent], x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
+    def ValidateEditedSlide(
+        self,
+        originalSlide: types.SlideContentWithType,editedSlide: types.SlideContentWithType,editPrompt: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[Optional[bool], bool]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+
+      raw = self.__runtime.stream_function_sync(
+        "ValidateEditedSlide",
+        {
+          "originalSlide": originalSlide,
+          "editedSlide": editedSlide,
+          "editPrompt": editPrompt,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlSyncStream[Optional[bool], bool](
+        raw,
+        lambda x: cast(Optional[bool], x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(bool, x.cast_to(types, types, partial_types, False)),
         self.__ctx_manager.get(),
       )
     
