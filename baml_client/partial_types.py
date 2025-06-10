@@ -37,6 +37,22 @@ class StreamState(BaseModel, Generic[T]):
     state: Literal["Pending", "Incomplete", "Complete"]
 
 
+class CustomerAnalysis(BaseModel):
+    core_problem: Optional[str] = None
+    business_consequences: Optional[str] = None
+    ideal_customer_profile: Optional[str] = None
+    key_stakeholders: List[str]
+    anticipated_objections: List[str]
+
+class DynamicInputContext(BaseModel):
+    content: Optional[str] = None
+    audience_type: Optional[str] = None
+    scenario: Optional[str] = None
+    tone: Optional[str] = None
+    pages: Optional[str] = None
+    meeting_deal_summary: Optional[str] = None
+    file_context: Optional[str] = None
+
 class ImageElement(BaseModel):
     id: Optional[str] = None
     type: Optional[str] = None
@@ -73,6 +89,13 @@ class ImageStyleEdit(BaseModel):
     objectFit: Optional[str] = None
     marginBottom: Optional[str] = None
 
+class MarketPosition(BaseModel):
+    market_context: Optional[str] = None
+    unique_value_proposition: Optional[str] = None
+    data_proof: List[str]
+    social_proof: List[str]
+    technical_proof: List[str]
+
 class OutlinePoint(BaseModel):
     text: Optional[str] = None
 
@@ -96,6 +119,15 @@ class SlideContentWithType(BaseModel):
     background: Optional[str] = None
     content: List[Union["SlideElementEdit", "ImageElementEdit"]]
 
+class SlideDetail(BaseModel):
+    id: Optional[int] = None
+    title: Optional[str] = None
+    objective: Optional[str] = None
+    key_content_elements: List[str]
+    visual_concept: Optional[str] = None
+    sales_narrative: Optional[str] = None
+    strategic_justification: Optional[str] = None
+
 class SlideEditRequest(BaseModel):
     slide: Optional["SlideContentWithType"] = None
     editPrompt: Optional[str] = None
@@ -117,3 +149,16 @@ class SlideElementEdit(BaseModel):
     width: Optional[int] = None
     height: Optional[int] = None
     html: Optional[str] = None
+
+class StrategicPresentationOutline(BaseModel):
+    title: Optional[str] = None
+    id: Optional[int] = None
+    strategic_plan: Optional["StrategicSalesPlan"] = None
+    slides: List["SlideDetail"]
+
+class StrategicSalesPlan(BaseModel):
+    presenter_role: Optional[str] = None
+    presentation_task: Optional[str] = None
+    primary_cta: Optional[str] = None
+    customer_analysis: Optional["CustomerAnalysis"] = None
+    market_position: Optional["MarketPosition"] = None

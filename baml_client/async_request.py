@@ -106,6 +106,56 @@ class AsyncHttpRequest:
         False,
       )
     
+    async def GenerateQuickOutline(
+        self,
+        content: str,audience: Optional[str],pages: Optional[str],scenario: Optional[str],tone: Optional[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "GenerateQuickOutline",
+        {
+          "content": content,
+          "audience": audience,
+          "pages": pages,
+          "scenario": scenario,
+          "tone": tone,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
+    async def GenerateStrategicSalesOutline(
+        self,
+        input: types.DynamicInputContext,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "GenerateStrategicSalesOutline",
+        {
+          "input": input,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
     async def ValidateEditedSlide(
         self,
         originalSlide: types.SlideContentWithType,editedSlide: types.SlideContentWithType,editPrompt: str,
@@ -225,6 +275,56 @@ class AsyncHttpStreamRequest:
 
       return await self.__runtime.build_request(
         "GeneratePresentation",
+        {
+          "input": input,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
+    async def GenerateQuickOutline(
+        self,
+        content: str,audience: Optional[str],pages: Optional[str],scenario: Optional[str],tone: Optional[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "GenerateQuickOutline",
+        {
+          "content": content,
+          "audience": audience,
+          "pages": pages,
+          "scenario": scenario,
+          "tone": tone,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
+    async def GenerateStrategicSalesOutline(
+        self,
+        input: types.DynamicInputContext,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "GenerateStrategicSalesOutline",
         {
           "input": input,
         },

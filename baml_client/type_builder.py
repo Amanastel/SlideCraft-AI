@@ -22,11 +22,19 @@ from .globals import DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIM
 class TypeBuilder(_TypeBuilder):
     def __init__(self):
         super().__init__(classes=set(
-          ["ImageElement","ImageElementEdit","ImageStyle","ImageStyleEdit","OutlinePoint","OutlineSection","PresentationInput","SlideContent","SlideContentWithType","SlideEditRequest","SlideElement","SlideElementEdit",]
+          ["CustomerAnalysis","DynamicInputContext","ImageElement","ImageElementEdit","ImageStyle","ImageStyleEdit","MarketPosition","OutlinePoint","OutlineSection","PresentationInput","SlideContent","SlideContentWithType","SlideDetail","SlideEditRequest","SlideElement","SlideElementEdit","StrategicPresentationOutline","StrategicSalesPlan",]
         ), enums=set(
           []
         ), runtime=DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME)
 
+
+    @property
+    def CustomerAnalysis(self) -> "CustomerAnalysisAst":
+        return CustomerAnalysisAst(self)
+
+    @property
+    def DynamicInputContext(self) -> "DynamicInputContextAst":
+        return DynamicInputContextAst(self)
 
     @property
     def ImageElement(self) -> "ImageElementAst":
@@ -43,6 +51,10 @@ class TypeBuilder(_TypeBuilder):
     @property
     def ImageStyleEdit(self) -> "ImageStyleEditAst":
         return ImageStyleEditAst(self)
+
+    @property
+    def MarketPosition(self) -> "MarketPositionAst":
+        return MarketPositionAst(self)
 
     @property
     def OutlinePoint(self) -> "OutlinePointAst":
@@ -65,6 +77,10 @@ class TypeBuilder(_TypeBuilder):
         return SlideContentWithTypeAst(self)
 
     @property
+    def SlideDetail(self) -> "SlideDetailAst":
+        return SlideDetailAst(self)
+
+    @property
     def SlideEditRequest(self) -> "SlideEditRequestAst":
         return SlideEditRequestAst(self)
 
@@ -76,9 +92,133 @@ class TypeBuilder(_TypeBuilder):
     def SlideElementEdit(self) -> "SlideElementEditAst":
         return SlideElementEditAst(self)
 
+    @property
+    def StrategicPresentationOutline(self) -> "StrategicPresentationOutlineAst":
+        return StrategicPresentationOutlineAst(self)
+
+    @property
+    def StrategicSalesPlan(self) -> "StrategicSalesPlanAst":
+        return StrategicSalesPlanAst(self)
 
 
 
+
+
+class CustomerAnalysisAst:
+    def __init__(self, tb: _TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("CustomerAnalysis")
+        self._properties: typing.Set[str] = set([ "core_problem",  "business_consequences",  "ideal_customer_profile",  "key_stakeholders",  "anticipated_objections", ])
+        self._props = CustomerAnalysisProperties(self._bldr, self._properties)
+
+    def type(self) -> FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "CustomerAnalysisProperties":
+        return self._props
+
+
+class CustomerAnalysisViewer(CustomerAnalysisAst):
+    def __init__(self, tb: _TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+
+
+
+class CustomerAnalysisProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
+
+    
+
+    @property
+    def core_problem(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("core_problem"))
+
+    @property
+    def business_consequences(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("business_consequences"))
+
+    @property
+    def ideal_customer_profile(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("ideal_customer_profile"))
+
+    @property
+    def key_stakeholders(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("key_stakeholders"))
+
+    @property
+    def anticipated_objections(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("anticipated_objections"))
+
+    
+
+class DynamicInputContextAst:
+    def __init__(self, tb: _TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("DynamicInputContext")
+        self._properties: typing.Set[str] = set([ "content",  "audience_type",  "scenario",  "tone",  "pages",  "meeting_deal_summary",  "file_context", ])
+        self._props = DynamicInputContextProperties(self._bldr, self._properties)
+
+    def type(self) -> FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "DynamicInputContextProperties":
+        return self._props
+
+
+class DynamicInputContextViewer(DynamicInputContextAst):
+    def __init__(self, tb: _TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+
+
+
+class DynamicInputContextProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
+
+    
+
+    @property
+    def content(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("content"))
+
+    @property
+    def audience_type(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("audience_type"))
+
+    @property
+    def scenario(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("scenario"))
+
+    @property
+    def tone(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("tone"))
+
+    @property
+    def pages(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("pages"))
+
+    @property
+    def meeting_deal_summary(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("meeting_deal_summary"))
+
+    @property
+    def file_context(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("file_context"))
+
+    
 
 class ImageElementAst:
     def __init__(self, tb: _TypeBuilder):
@@ -328,6 +468,60 @@ class ImageStyleEditProperties:
 
     
 
+class MarketPositionAst:
+    def __init__(self, tb: _TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("MarketPosition")
+        self._properties: typing.Set[str] = set([ "market_context",  "unique_value_proposition",  "data_proof",  "social_proof",  "technical_proof", ])
+        self._props = MarketPositionProperties(self._bldr, self._properties)
+
+    def type(self) -> FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "MarketPositionProperties":
+        return self._props
+
+
+class MarketPositionViewer(MarketPositionAst):
+    def __init__(self, tb: _TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+
+
+
+class MarketPositionProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
+
+    
+
+    @property
+    def market_context(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("market_context"))
+
+    @property
+    def unique_value_proposition(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("unique_value_proposition"))
+
+    @property
+    def data_proof(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("data_proof"))
+
+    @property
+    def social_proof(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("social_proof"))
+
+    @property
+    def technical_proof(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("technical_proof"))
+
+    
+
 class OutlinePointAst:
     def __init__(self, tb: _TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
@@ -550,6 +744,68 @@ class SlideContentWithTypeProperties:
 
     
 
+class SlideDetailAst:
+    def __init__(self, tb: _TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("SlideDetail")
+        self._properties: typing.Set[str] = set([ "id",  "title",  "objective",  "key_content_elements",  "visual_concept",  "sales_narrative",  "strategic_justification", ])
+        self._props = SlideDetailProperties(self._bldr, self._properties)
+
+    def type(self) -> FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "SlideDetailProperties":
+        return self._props
+
+
+class SlideDetailViewer(SlideDetailAst):
+    def __init__(self, tb: _TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+
+
+
+class SlideDetailProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
+
+    
+
+    @property
+    def id(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("id"))
+
+    @property
+    def title(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("title"))
+
+    @property
+    def objective(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("objective"))
+
+    @property
+    def key_content_elements(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("key_content_elements"))
+
+    @property
+    def visual_concept(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("visual_concept"))
+
+    @property
+    def sales_narrative(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("sales_narrative"))
+
+    @property
+    def strategic_justification(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("strategic_justification"))
+
+    
+
 class SlideEditRequestAst:
     def __init__(self, tb: _TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
@@ -713,6 +969,110 @@ class SlideElementEditProperties:
     @property
     def html(self) -> ClassPropertyViewer:
         return ClassPropertyViewer(self.__bldr.property("html"))
+
+    
+
+class StrategicPresentationOutlineAst:
+    def __init__(self, tb: _TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("StrategicPresentationOutline")
+        self._properties: typing.Set[str] = set([ "title",  "id",  "strategic_plan",  "slides", ])
+        self._props = StrategicPresentationOutlineProperties(self._bldr, self._properties)
+
+    def type(self) -> FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "StrategicPresentationOutlineProperties":
+        return self._props
+
+
+class StrategicPresentationOutlineViewer(StrategicPresentationOutlineAst):
+    def __init__(self, tb: _TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+
+
+
+class StrategicPresentationOutlineProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
+
+    
+
+    @property
+    def title(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("title"))
+
+    @property
+    def id(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("id"))
+
+    @property
+    def strategic_plan(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("strategic_plan"))
+
+    @property
+    def slides(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("slides"))
+
+    
+
+class StrategicSalesPlanAst:
+    def __init__(self, tb: _TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("StrategicSalesPlan")
+        self._properties: typing.Set[str] = set([ "presenter_role",  "presentation_task",  "primary_cta",  "customer_analysis",  "market_position", ])
+        self._props = StrategicSalesPlanProperties(self._bldr, self._properties)
+
+    def type(self) -> FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "StrategicSalesPlanProperties":
+        return self._props
+
+
+class StrategicSalesPlanViewer(StrategicSalesPlanAst):
+    def __init__(self, tb: _TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, ClassPropertyViewer]]:
+        return [(name, ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+
+
+
+class StrategicSalesPlanProperties:
+    def __init__(self, bldr: ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties
+
+    
+
+    @property
+    def presenter_role(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("presenter_role"))
+
+    @property
+    def presentation_task(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("presentation_task"))
+
+    @property
+    def primary_cta(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("primary_cta"))
+
+    @property
+    def customer_analysis(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("customer_analysis"))
+
+    @property
+    def market_position(self) -> ClassPropertyViewer:
+        return ClassPropertyViewer(self.__bldr.property("market_position"))
 
     
 

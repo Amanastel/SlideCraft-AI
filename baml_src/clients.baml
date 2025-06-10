@@ -117,3 +117,41 @@ client<llm> Gemini20Flash {
     }
   }
 }
+
+
+client<llm> Gemini20Pro {
+  provider google-ai
+  options {
+    model "gemini-2.0-pro"
+    api_key env.GOOGLE_API_KEY
+    generationConfig {
+      temperature 0.7
+      maxOutputTokens 8192
+    }
+  }
+}
+
+// client<llm> Gemini2.5 flash 
+
+client<llm> Gemini25Flash {
+  provider google-ai
+  options {
+    model "gemini-2.5-flash"
+    api_key env.GOOGLE_API_KEY
+    generationConfig {
+      temperature 0.7
+      maxOutputTokens 8192
+    }
+  }
+}
+client<llm> Gemini25Pro {
+  provider google-ai
+  options {
+    model "gemini-2.5-pro"
+    api_key env.GOOGLE_API_KEY
+    generationConfig {
+      temperature 0.7
+      maxOutputTokens 8192
+    }
+  }
+}

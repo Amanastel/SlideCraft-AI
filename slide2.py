@@ -70,6 +70,9 @@ s3 = boto3.client(
     region_name=os.getenv("AWS_REGION")
 )
 
+
+
+
 # Configure logger
 logging.basicConfig(
     level=logging.INFO,
@@ -957,6 +960,9 @@ def generate_presentation():
         return jsonify({'error': str(e)}), 500
     
 
+
+
+
 @app.route("/api/v1/slides/generate-all-images", methods=["POST"])
 def generate_all_images():
     data = request.get_json() or {}
@@ -972,6 +978,136 @@ def generate_all_images():
     
 
     return jsonify({"success": True, "message": "Image generation started","data": generate_all_images_for_presentation(request_id)}), 202
+
+
+@app.route("/api/v1/slides/slide-data", methods=["POST"])
+def getSlideData():
+    data = request.get_json() or {}
+    request_id = data.get("request_id")
+    if not request_id:
+        return jsonify({"error": "Missing request ID"}), 400
+    # Fetch record from DB
+    
+    input_data = data.get("input_data", {})
+    print(f"Input data received: {input_data}")
+    if not input_data:
+        return jsonify({"error": "Missing input data"}), 400
+
+
+    # Parse and prepare input data
+    if isinstance(input_data, str):
+        input_data = json.loads(input_data)
+
+    # Structure for BAML - handling the new data format
+    try:
+        presentation_input = {
+            "id": int(input_data.get('id', 0)),
+            "title": input_data.get('title', ''),
+            "outline": []
+        }
+        
+        # Handle slides array if present
+        if 'slides' in input_data:
+            for slide in input_data.get('slides', []):
+                slide_outline = {
+                    "id": int(slide.get('id', 0)),
+                    "title": slide.get('title', ''),
+                    "points": slide.get('key_content_elements', [])
+                }
+                presentation_input["outline"].append(slide_outline)
+        
+        # Fallback: handle legacy outline format if no slides but outline exists
+        elif 'outline' in input_data:
+            for section in input_data.get('outline', []):
+                section_outline = {
+                    "id": int(section.get('id', 0)),
+                    "title": section.get('title', ''),
+                    "points": section.get('points', [])
+                }
+                presentation_input["outline"].append(section_outline)
+        
+    except (ValueError, TypeError) as e:
+        return jsonify({"error": f"Invalid data format - could not convert IDs to integers: {str(e)}"}), 400
+
+    # Generate presentation
+    slides = b.GeneratePresentation(presentation_input)
+
+    # Convert to JSON format efficiently (same logic as in generate_presentation route)
+    slides_json = []
+    for slide in slides:
+        content = []
+        for element in slide.content:
+            element_dict = {
+                "id": getattr(element, 'id', None),
+                "type": None,
+                "x": getattr(element, 'x', 0),
+                "y": getattr(element, 'y', 0),
+                "width": getattr(element, 'width', 0),
+                "height": getattr(element, 'height', 0)
+            }
+
+            if hasattr(element, 'html'):
+                element_dict.update({"type": "html", "html": element.html})
+            elif hasattr(element, 'content'):
+                style = {}
+                if hasattr(element, 'style'):
+                    style = {k: v for k, v in {
+                        "font_family": getattr(element.style, 'font_family', None),
+                        "font_size": getattr(element.style, 'font_size', None),
+                        "color": getattr(element.style, 'color', None),
+                        "line_height": getattr(element.style, 'line_height', None),
+                        "alignment": getattr(element.style, 'alignment', None)
+                    }.items() if v is not None}
+                element_dict.update({
+                    "type": "text",
+                    "content": element.content,
+                    **({"style": style} if style else {})
+                })
+            elif hasattr(element, 'src'):
+                style = {}
+                if hasattr(element, 'style'):
+                    style = {k: v for k, v in {
+                        "border_radius": getattr(element.style, 'border_radius', None),
+                        "object_fit": getattr(element.style, 'object_fit', None),
+                        "border": getattr(element.style, 'border', None),
+                        "shadow": getattr(element.style, 'shadow', None)
+                    }.items() if v is not None}
+                element_dict.update({
+                    "type": "image",
+                    "src": element.src,
+                    "alt_text": getattr(element, 'alt_text', ''),
+                    "caption": getattr(element, 'caption', ''),
+                    "prompt": getattr(element, 'prompt', ''),
+                    **({"style": style} if style else {})
+                })
+
+            # Only add non-None values
+            content.append(
+                {k: v for k, v in element_dict.items() if v is not None})
+
+        slide_dict = {
+            "slide_id": slide.slide_id,
+            "background": slide.background
+        }
+        if content:
+            slide_dict["content"] = content
+        slides_json.append(slide_dict)
+        
+        
+        response_data = {"slides": slides_json}
+
+        # Store in DB asynchronously
+        store_slide_json(request_id, response_data)
+        
+        
+        thread = Thread(target=generate_all_images_for_presentation,
+                        args=(request_id,))
+        thread.start()
+
+    return jsonify({"data": {"slides": slides_json}}), 200
+
+
+
 
 
 @app.route("/api/v1/files/upload", methods=["POST"])

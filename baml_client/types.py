@@ -41,6 +41,22 @@ def all_succeeded(checks: Dict[CheckName, Check]) -> bool:
 
 
 
+class CustomerAnalysis(BaseModel):
+    core_problem: str
+    business_consequences: str
+    ideal_customer_profile: str
+    key_stakeholders: List[str]
+    anticipated_objections: List[str]
+
+class DynamicInputContext(BaseModel):
+    content: str
+    audience_type: Optional[str] = None
+    scenario: Optional[str] = None
+    tone: Optional[str] = None
+    pages: Optional[str] = None
+    meeting_deal_summary: Optional[str] = None
+    file_context: Optional[str] = None
+
 class ImageElement(BaseModel):
     id: str
     type: str
@@ -77,6 +93,13 @@ class ImageStyleEdit(BaseModel):
     objectFit: str
     marginBottom: str
 
+class MarketPosition(BaseModel):
+    market_context: str
+    unique_value_proposition: str
+    data_proof: List[str]
+    social_proof: List[str]
+    technical_proof: List[str]
+
 class OutlinePoint(BaseModel):
     text: str
 
@@ -100,6 +123,15 @@ class SlideContentWithType(BaseModel):
     background: str
     content: List[Union["SlideElementEdit", "ImageElementEdit"]]
 
+class SlideDetail(BaseModel):
+    id: int
+    title: str
+    objective: str
+    key_content_elements: List[str]
+    visual_concept: str
+    sales_narrative: str
+    strategic_justification: str
+
 class SlideEditRequest(BaseModel):
     slide: "SlideContentWithType"
     editPrompt: str
@@ -121,3 +153,16 @@ class SlideElementEdit(BaseModel):
     width: int
     height: int
     html: str
+
+class StrategicPresentationOutline(BaseModel):
+    title: str
+    id: int
+    strategic_plan: "StrategicSalesPlan"
+    slides: List["SlideDetail"]
+
+class StrategicSalesPlan(BaseModel):
+    presenter_role: str
+    presentation_task: str
+    primary_cta: str
+    customer_analysis: "CustomerAnalysis"
+    market_position: "MarketPosition"

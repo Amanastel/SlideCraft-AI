@@ -12,6 +12,14 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 
+# Import strategic outline generator
+try:
+    from outline import StrategicOutlineGenerator, PresentationRequest, process_meeting_data
+    STRATEGIC_OUTLINE_AVAILABLE = True
+except ImportError as e:
+    print(f"Strategic outline generator not available: {e}")
+    STRATEGIC_OUTLINE_AVAILABLE = False
+
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
@@ -535,6 +543,118 @@ def generate_deal_summary():
         return jsonify({"deal_summary": deal_summary}), 200
 
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/generate-strategic-outline", methods=["POST"])
+def generate_strategic_outline_api():
+    """
+    Generate strategic sales presentation outline using advanced sales methodology.
+    
+    Expected JSON payload:
+    {
+        "content": "User's primary request",
+        "audience_type": "Executive Leadership", (optional)
+        "scenario": "First-time pitch", (optional)
+        "tone": "Formal and data-driven", (optional)
+        "pages": "10-12 slides", (optional)
+        "meeting_deal_summary": "Meeting summary", (optional)
+        "file_context": "File content", (optional)
+        "file_url": ["url1", "url2"] (optional)
+    }
+    """
+    if not STRATEGIC_OUTLINE_AVAILABLE:
+        return jsonify({"error": "Strategic outline generator not available"}), 500
+    
+    try:
+        data = request.get_json()
+        if not data or "content" not in data:
+            return jsonify({"error": "Missing 'content' field in request body"}), 400
+
+        # Extract file content if file_url is provided
+        file_context = data.get("file_context", "")
+        file_urls = data.get("file_url", [])
+        
+        if file_urls and isinstance(file_urls, list) and len(file_urls) > 0:
+            try:
+                extracted_content, file_info = download_and_extract_content(file_urls[0])
+                if file_context:
+                    file_context += f"\n\n--- Additional File Content ---\n{extracted_content}"
+                else:
+                    file_context = extracted_content
+            except Exception as e:
+                app.logger.warning(f"Failed to extract file content: {str(e)}")
+
+        # Process meeting data if provided - ensure JSON format
+        meeting_summary = ""
+        meeting_data = data.get("meeting_data")
+        if meeting_data:
+            if isinstance(meeting_data, dict):
+                # Convert dict to JSON string
+                meeting_summary = json.dumps(meeting_data, indent=2)
+                app.logger.info("Meeting data converted from dict to JSON")
+            elif isinstance(meeting_data, str):
+                # Validate if it's already JSON, if not, wrap it
+                try:
+                    json.loads(meeting_data)
+                    meeting_summary = meeting_data
+                    app.logger.info("Meeting data validated as JSON")
+                except json.JSONDecodeError:
+                    meeting_summary = json.dumps({"meeting_summary": meeting_data}, indent=2)
+                    app.logger.warning("Meeting data was not JSON, wrapped in JSON structure")
+            else:
+                # Convert other types to JSON
+                meeting_summary = json.dumps({"meeting_data": str(meeting_data)}, indent=2)
+                app.logger.warning("Meeting data converted from non-standard type to JSON")
+        
+        # Add any additional meeting deal summary - ensure JSON format
+        additional_summary = data.get("meeting_deal_summary")
+        if additional_summary:
+            if isinstance(additional_summary, dict):
+                additional_json = json.dumps(additional_summary, indent=2)
+            elif isinstance(additional_summary, str):
+                try:
+                    # Validate JSON
+                    json.loads(additional_summary)
+                    additional_json = additional_summary
+                except json.JSONDecodeError:
+                    # Wrap in JSON structure
+                    additional_json = json.dumps({"meeting_deal_summary": additional_summary}, indent=2)
+            else:
+                additional_json = json.dumps({"additional_summary": str(additional_summary)}, indent=2)
+            
+            if meeting_summary:
+                # Merge JSON objects
+                try:
+                    existing_data = json.loads(meeting_summary)
+                    additional_data = json.loads(additional_json)
+                    merged_data = {**existing_data, **additional_data}
+                    meeting_summary = json.dumps(merged_data, indent=2)
+                except json.JSONDecodeError:
+                    meeting_summary += f"\n\n{additional_json}"
+            else:
+                meeting_summary = additional_json
+
+        # Create presentation request
+        request_obj = PresentationRequest(
+            content=data["content"],
+            audience_type=data.get("audience_type"),
+            scenario=data.get("scenario"),
+            tone=data.get("tone"),
+            pages=data.get("pages"),
+            meeting_deal_summary=meeting_summary,
+            file_context=file_context
+        )
+
+        # Generate strategic outline
+        generator = StrategicOutlineGenerator()
+        result = generator.generate_strategic_outline(request_obj)
+
+        app.logger.info(f"Generated strategic outline with {len(result.get('slides', []))} slides")
+        return jsonify(result)
+
+    except Exception as e:
+        app.logger.error(f"Error generating strategic outline: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":

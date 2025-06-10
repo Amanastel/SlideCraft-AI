@@ -179,6 +179,60 @@ class BamlSyncClient:
       )
       return cast(List[types.SlideContent], raw.cast_to(types, types, partial_types, False))
     
+    def GenerateQuickOutline(
+        self,
+        content: str,audience: Optional[str],pages: Optional[str],scenario: Optional[str],tone: Optional[str],
+        baml_options: BamlCallOptions = {},
+    ) -> types.StrategicPresentationOutline:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+
+      raw = self.__runtime.call_function_sync(
+        "GenerateQuickOutline",
+        {
+          "content": content,"audience": audience,"pages": pages,"scenario": scenario,"tone": tone,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(types.StrategicPresentationOutline, raw.cast_to(types, types, partial_types, False))
+    
+    def GenerateStrategicSalesOutline(
+        self,
+        input: types.DynamicInputContext,
+        baml_options: BamlCallOptions = {},
+    ) -> types.StrategicPresentationOutline:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+
+      raw = self.__runtime.call_function_sync(
+        "GenerateStrategicSalesOutline",
+        {
+          "input": input,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(types.StrategicPresentationOutline, raw.cast_to(types, types, partial_types, False))
+    
     def ValidateEditedSlide(
         self,
         originalSlide: types.SlideContentWithType,editedSlide: types.SlideContentWithType,editPrompt: str,
@@ -345,6 +399,78 @@ class BamlStreamClient:
         raw,
         lambda x: cast(List[partial_types.SlideContent], x.cast_to(types, types, partial_types, True)),
         lambda x: cast(List[types.SlideContent], x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
+    def GenerateQuickOutline(
+        self,
+        content: str,audience: Optional[str],pages: Optional[str],scenario: Optional[str],tone: Optional[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[partial_types.StrategicPresentationOutline, types.StrategicPresentationOutline]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+
+      raw = self.__runtime.stream_function_sync(
+        "GenerateQuickOutline",
+        {
+          "content": content,
+          "audience": audience,
+          "pages": pages,
+          "scenario": scenario,
+          "tone": tone,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlSyncStream[partial_types.StrategicPresentationOutline, types.StrategicPresentationOutline](
+        raw,
+        lambda x: cast(partial_types.StrategicPresentationOutline, x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(types.StrategicPresentationOutline, x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
+    def GenerateStrategicSalesOutline(
+        self,
+        input: types.DynamicInputContext,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlSyncStream[partial_types.StrategicPresentationOutline, types.StrategicPresentationOutline]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+
+      raw = self.__runtime.stream_function_sync(
+        "GenerateStrategicSalesOutline",
+        {
+          "input": input,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlSyncStream[partial_types.StrategicPresentationOutline, types.StrategicPresentationOutline](
+        raw,
+        lambda x: cast(partial_types.StrategicPresentationOutline, x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(types.StrategicPresentationOutline, x.cast_to(types, types, partial_types, False)),
         self.__ctx_manager.get(),
       )
     
