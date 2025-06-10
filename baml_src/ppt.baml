@@ -55,7 +55,7 @@ class SlideContent {
 
 // The function that generates a PowerPoint presentation
 function GeneratePresentation(input: PresentationInput) -> SlideContent[] {
-  client CustomGPT4o
+  client Gemini20Flash
   
   prompt #"
   You are a highly skilled **Sales Presentation Slide Generator AI** built for creating modern, visually stunning, and persuasive **sales pitch decks**. You specialize in transforming structured sales insights into beautiful, client-ready PowerPoint-style slides used by top-performing B2B sales teams in enterprise environments.

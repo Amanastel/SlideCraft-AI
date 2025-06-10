@@ -1,0 +1,46 @@
+{
+  "title": "AI-Powered Business Solutions",
+  "cta": "Schedule a demo to see our solutions in action",
+  "slides": [
+    {
+      "title": "Current Business Challenges",
+      "content": [
+        "Manual processes consuming valuable time",
+        "Lack of real-time insights for decision making",
+        "Difficulty scaling operations efficiently",
+        "Integration challenges with legacy systems"
+      ],
+      "objective": "Identify key pain points",
+      "metrics": {
+        "Manual Work": 60,
+        "Automation": 25,
+        "Optimization": 15
+      }
+    },
+    {
+      "title": "Our AI Solution",
+      "content": [
+        "Intelligent automation for routine tasks",
+        "Real-time analytics and reporting",
+        "Seamless integration capabilities",
+        "Scalable cloud-based architecture"
+      ],
+      "objective": "Present our solution"
+    },
+    {
+      "title": "Proven Results",
+      "content": [
+        "80% reduction in manual processing time",
+        "50% faster decision-making process",
+        "99.9% uptime and reliability",
+        "ROI achieved within 6 months"
+      ],
+      "objective": "Show measurable impact",
+      "metrics": {
+        "Before": 25,
+        "6 Months": 75,
+        "12 Months": 95
+      }
+    }
+  ]
+}
